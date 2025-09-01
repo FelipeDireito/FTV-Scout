@@ -42,6 +42,9 @@ build/
 /backend/.ruff_cache
 /backend/.pytest_cache
 
+# Banco de Dados
+test.db
+
 # OS
 .DS_Store
 Thumbs.db
