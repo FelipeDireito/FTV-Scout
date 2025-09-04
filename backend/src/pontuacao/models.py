@@ -14,14 +14,14 @@ class TipoAcao(Base):
     __tablename__ = 'tipos_acoes'
 
     tipo_acao_id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, nullable=False)
+    nome_acao = Column(String, nullable=False)
 
 
 class TecnicaAcao(Base):
     __tablename__ = 'tecnicas_acoes'
 
     tecnica_acao_id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, nullable=False)
+    nome_tecnica = Column(String, nullable=False)
 
 
 class Ponto(Base):
