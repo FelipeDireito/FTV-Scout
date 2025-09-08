@@ -44,6 +44,7 @@ build/
 
 # Banco de Dados
 test.db
+*.sql
 
 # OS
 .DS_Store
