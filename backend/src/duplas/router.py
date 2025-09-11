@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from src.core.database import get_db
-from src.duplas.schemas import Dupla, DuplaLeitura
-from src.duplas.services import criar_dupla, listar_dupla
+from src.duplas.schemas import Dupla, DuplaLeitura, AdicionarAtletaDupla
+from src.duplas.services import criar_dupla, listar_dupla, adicionar_atleta_a_dupla
 
 
 duplas_router = APIRouter(tags=["duplas"], prefix="/duplas")
@@ -29,3 +29,9 @@ def listar_duplas(db: Session = Depends(get_db)):
             atletas_ids=[a.atleta_id for a in d.atletas]
         ) for d in duplas
     ]
+
+
+@duplas_router.post("/adicionar_atleta")
+def adicionar_atleta_dupla(dados: AdicionarAtletaDupla, db: Session = Depends(get_db)):
+    return adicionar_atleta_a_dupla(db, dados.dupla_id, dados.atleta_id)
+

@@ -9,3 +9,7 @@ class DuplaLeitura(BaseModel):
     dupla_id: int
     nome_dupla: str
     atletas_ids: list[int]
+
+class AdicionarAtletaDupla(BaseModel):
+    dupla_id: int = Field(..., example=1)
+    atleta_id: int = Field(..., example=3)
