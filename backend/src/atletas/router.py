@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from src.atletas.services import criar_atleta, obter_todos_atletas
+from src.atletas.services import criar_atleta, obter_todos_atletas, deleta_atleta
 from src.atletas.schemas import Atleta
 from src.core.database import get_db
 
@@ -19,3 +19,7 @@ def obter_atleta(atleta_id: int):
 @atletas_router.get("")
 def listar_atletas(db: Session = Depends(get_db)):
     return obter_todos_atletas(db)
+
+@atletas_router.delete("/{atleta_id}")
+def deletar_atleta(atleta_id: int, db: Session = Depends(get_db)):
+    return deleta_atleta(db, atleta_id)

@@ -10,3 +10,12 @@ def criar_atleta(db: Session, atleta: Atleta):
 
 def obter_todos_atletas(db: Session):
     return db.query(Atleta).all()
+
+
+def deleta_atleta(db: Session, atleta_id: int):
+    db_atleta = db.query(Atleta).filter(Atleta.atleta_id == atleta_id).first()
+    if db_atleta:
+        db.delete(db_atleta)
+        db.commit()
+        return {"message": f"Atleta {atleta_id} deletado com sucesso"}
+    return {"message": f"Atleta {atleta_id} não encontrado"}
