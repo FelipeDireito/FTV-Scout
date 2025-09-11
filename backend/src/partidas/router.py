@@ -11,6 +11,7 @@ from src.partidas.services import (
 )
 from src.core.database import get_db
 
+
 partidas_router = APIRouter(tags=["partidas"], prefix="/partidas")
 
 
