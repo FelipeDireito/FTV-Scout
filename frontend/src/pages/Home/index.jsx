@@ -3,13 +3,10 @@ import { Link } from 'react-router-dom';
 
 function Home() {
   return (
-    // Container responsivo: padding menor em telas pequenas, altura mínima da tela
     <div className="container mx-auto p-4 md:p-8 flex flex-col min-h-screen">
       <h1 className="text-4xl md:text-5xl font-bold my-8 text-center md:text-left text-gray-200">FTV Scout</h1>
 
-      {/* Grid responsivo: 1 coluna em mobile, 2 colunas em tablets e maiores */}
       <main className="grid grid-cols-1 md:grid-cols-2 gap-8 flex-grow">
-        {/* Coluna da Esquerda: Botões de Ação */}
         <div className="flex flex-col items-center justify-center gap-6">
           <Link to="/nova-partida"
             className="w-full max-w-sm text-center bg-[#00A3FF] hover:bg-[#0082cc] font-bold uppercase text-white transition-all duration-200 text-2xl px-12 py-6 rounded-xl shadow-lg shadow-blue-500/20 hover:-translate-y-0.5"
@@ -24,11 +21,9 @@ function Home() {
           </Link>
         </div>
 
-        {/* Coluna da Direita: Partidas Recentes */}
         <div className="hidden md:flex flex-col">
           <h2 className="text-2xl font-semibold mb-4 text-gray-300">Partidas Recentes</h2>
           <div className="space-y-4 overflow-y-auto pr-2">
-            {/* Exemplo de Card de Partida (baseado no protótipo) */}
             <div className="bg-[#1E1E1E] p-4 rounded-lg cursor-pointer hover:bg-[#2a2a2a] transition-colors">
               <h3 className="font-bold text-lg">Final do Torneio de Verão</h3>
               <p className="text-gray-400">Leo/Felipe vs. Ajax/Victor</p>
