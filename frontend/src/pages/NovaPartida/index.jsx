@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 
 function NovaPartida() {
-  0
+
   const [nomePartida, setNomePartida] = useState("");
   const navigate = useNavigate();
 
