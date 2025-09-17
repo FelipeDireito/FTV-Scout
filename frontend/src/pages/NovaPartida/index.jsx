@@ -39,15 +39,17 @@ function NovaPartida() {
             <Link
               to="/"
               className="bg-transparent border-2 border-gray-600 hover:bg-gray-700 text-gray-200 font-bold uppercase py-3 px-6 rounded-lg transition-colors"
-            >Cancelar
+            >
+              Cancelar
             </Link>
             <button
               id='btn-avancar'
               type='button'
               disabled={!nomePartida}
               onClick={handleAvancar}
-              className="bg-[#00A3FF] hover:bg-[#0082cc] font-bold uppercase text-white py-3 px-6 rounded-lg transition-colors shadow-lg shadow-blue-500/20 disabled:bg-gray-500 disabled:cursor-not-allowed"
-            >Avançar
+              className="bg-[#00a2ffdc] hover:bg-[#0082cc] font-bold uppercase text-white py-3 px-6 rounded-lg transition-colors shadow-lg disabled:bg-gray-500 disabled:cursor-not-allowed"
+            >
+              Avançar
             </button>
           </div>
         </form>
