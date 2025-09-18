@@ -39,6 +39,6 @@ def finalizar_partida(partida_id: int, partida_update: PartidaUpdate, db: Sessio
     return atualizar_partida(db, partida_id, partida_update)
 
 
-@partidas_router.post("/partida-com-atletas", response_model=Partida, status_code=status.HTTP_201_CREATED)
+@partidas_router.post("/com-atletas", response_model=Partida, status_code=status.HTTP_201_CREATED)
 def cadastrar_partida_com_atletas(partida: PartidaCreateComAtletas, db: Session = Depends(get_db)):
     return criar_partida_com_atletas(db, partida)
