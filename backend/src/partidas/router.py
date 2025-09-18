@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from src.partidas.schemas import Partida, PartidaCreate, PartidaUpdate
+from src.partidas.schemas import Partida, PartidaCreate, PartidaUpdate, PartidaCreateComAtletas
 from src.partidas.services import (
     criar_partida,
     obter_todas_partidas,
     obter_partida_por_id,
     atualizar_partida,
+    criar_partida_com_atletas,
 )
 from src.core.database import get_db
 
@@ -36,3 +37,8 @@ def listar_partidas(db: Session = Depends(get_db)):
 @partidas_router.patch("/{partida_id}", response_model=Partida)
 def finalizar_partida(partida_id: int, partida_update: PartidaUpdate, db: Session = Depends(get_db)):
     return atualizar_partida(db, partida_id, partida_update)
+
+
+@partidas_router.post("/partida-com-atletas", response_model=Partida, status_code=status.HTTP_201_CREATED)
+def cadastrar_partida_com_atletas(partida: PartidaCreateComAtletas, db: Session = Depends(get_db)):
+    return criar_partida_com_atletas(db, partida)

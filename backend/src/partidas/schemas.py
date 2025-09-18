@@ -34,3 +34,23 @@ class Partida(BaseModel):
 
     class Config:
         from_attributes = True
+
+class PartidaCreateComAtletas(BaseModel):
+    nome_partida: str = Field(..., example="Final Campeonato 2024")
+    data_hora: datetime = Field(default_factory=datetime.utcnow)
+    atleta_dupla_a1_id: int = Field(..., example=1)
+    atleta_dupla_a2_id: int = Field(..., example=2)
+    atleta_dupla_b1_id: int = Field(..., example=3)
+    atleta_dupla_b2_id: int = Field(..., example=4)
+    
+    @model_validator(mode="after")
+    def check_atletas_diferentes(self) -> Self:
+        atletas = [
+            self.atleta_dupla_a1_id,
+            self.atleta_dupla_a2_id,
+            self.atleta_dupla_b1_id,
+            self.atleta_dupla_b2_id,
+        ]
+        if len(atletas) != len(set(atletas)):
+            raise ValueError("Todos os atletas devem ser diferentes.")
+        return self
