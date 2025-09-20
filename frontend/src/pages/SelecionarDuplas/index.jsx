@@ -105,24 +105,21 @@ function SelecionarDuplas() {
 
   console.log("Nome da Partida recebida:", nomePartida);
 
+  const fetchJogadores = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get('/atletas');
+      setAllJogadores(response.data);
+      console.log("Jogadores carregados!");
+    } catch (error) {
+      console.error("Erro ao buscar jogadores:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchPlayers = async () => {
-      setIsLoading(true);
-      try {
-        let users = []
-        users = await api.get('/atletas');
-        setAllJogadores(users.data);
-        console.log(users.data);
-        console.log("Jogadores carregados!");
-
-      } catch (error) {
-        console.error("Erro ao buscar jogadores:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPlayers();
+    fetchJogadores();
   }, []);
 
 
@@ -130,12 +127,8 @@ function SelecionarDuplas() {
     console.log("Enviando novo jogador para a API...", JogadorData);
     try {
       const response = await api.post('/atletas', JogadorData);
-
-      const jogadorCriado = response.data;
-
-      setAllJogadores(jogadoresPrev => [...jogadoresPrev, jogadorCriado]);
-
-      console.log("Jogador salvo com sucesso:", jogadorCriado);
+      console.log("Jogador salvo com sucesso:", response.data);
+      await fetchJogadores();
     } catch (error) {
       console.error("Erro ao salvar novo jogador:", error);
       alert("Não foi possível salvar o jogador. Verifique o console para mais detalhes.");
@@ -200,7 +193,7 @@ function SelecionarDuplas() {
       console.log("Partida iniciada com sucesso:", resposta.data);
 
       navigate('/partida', {
-        state: { duplas: { a1: duplaA[0], a2: duplaA[1], b1: duplaB[0], b2: duplaB[1] } }
+        state: { duplas: { a1: duplaA[0], a2: duplaA[1], b1: duplaB[0], b2: duplaB[1] }, partida: resposta.data }
       });
 
     } catch (error) {
