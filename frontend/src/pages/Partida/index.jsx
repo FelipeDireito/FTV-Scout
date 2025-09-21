@@ -48,26 +48,34 @@ const DisplayQuadra = ({ activeZone, onClickZona }) => {
 
 const ModalPonto = ({ timeVencedor, onClose, onFinalize }) => {
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md space-y-4">
-        <h3 className={`text-2xl font-bold text-center ${timeVencedor === 'A' ? 'text-blue-400' : 'text-red-400'}`}>
-          Ponto para a Dupla {timeVencedor}
-        </h3>
-        <p className="text-center text-gray-300">Selecione o motivo do ponto:</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {MOTIVOS_PONTO.map(motivo => (
-            <button
-              key={motivo.id}
-              onClick={() => onFinalize(motivo.id)}
-              className="btn-primary text-base py-3"
-            >
-              {motivo.descricao}
-            </button>
-          ))}
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh]">
+        <div className="flex-shrink-0 p-4 sm:p-5 border-b border-gray-700/60">
+          <h3 className={`text-xl sm:text-2xl font-bold text-center ${timeVencedor === 'A' ? 'text-blue-400' : 'text-red-400'}`}>
+            Ponto para a Dupla {timeVencedor}
+          </h3>
         </div>
-        <button onClick={onClose} className="btn-secondary w-full mt-2">
-          Cancelar
-        </button>
+
+        <div className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-4">
+          <p className="text-center text-gray-300">Selecione o motivo do ponto:</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {MOTIVOS_PONTO.map(motivo => (
+              <button
+                key={motivo.id}
+                onClick={() => onFinalize(motivo.id)}
+                className="btn-primary text-base py-2 sm:py-3"
+              >
+                {motivo.descricao}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex-shrink-0 p-4 sm:p-5 border-t border-gray-700/60">
+          <button onClick={onClose} className="btn-secondary w-full py-2 sm:py-3">
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -114,7 +122,7 @@ const ModalFinalizarPartida = ({ score, pontos, partida, onClose, onFinalizar })
         <div className="flex-shrink-0 p-4 sm:p-5 lg:p-6 border-b border-gray-700/60">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-white">Finalizar Partida?</h2>
         </div>
-        
+
         <div className="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-4">
           <div className="text-center bg-gray-900 p-3 sm:p-4 rounded-lg">
             <p className="text-base sm:text-lg text-gray-400">Placar Final</p>
@@ -124,7 +132,7 @@ const ModalFinalizarPartida = ({ score, pontos, partida, onClose, onFinalizar })
               <span className="text-5xl sm:text-6xl lg:text-7xl font-black text-red-400 tracking-tighter">{score.b}</span>
             </div>
           </div>
-          
+
           <div className="bg-gray-900/50 rounded-lg p-2 sm:p-3 hidden sm:block">
             <h3 className="text-sm sm:text-base font-semibold text-gray-300 mb-2 text-center">Resumo dos Pontos</h3>
             <div className="overflow-y-auto max-h-24 sm:max-h-32 lg:max-h-48 pr-2 text-xs sm:text-sm">
@@ -160,12 +168,12 @@ const ModalFinalizarPartida = ({ score, pontos, partida, onClose, onFinalizar })
               )}
             </div>
           </div>
-          
+
           {/* Para telas pequenas */}
           <div className="bg-gray-900/50 rounded-lg p-3 sm:hidden">
             <p className="text-center text-gray-300 py-2 text-sm">
-              {pontos && pontos.length > 0 
-                ? `${pontos.length} ${pontos.length === 1 ? 'ponto registrado' : 'pontos registrados'}` 
+              {pontos && pontos.length > 0
+                ? `${pontos.length} ${pontos.length === 1 ? 'ponto registrado' : 'pontos registrados'}`
                 : "Nenhum ponto registrado ainda"}
             </p>
           </div>
@@ -174,7 +182,7 @@ const ModalFinalizarPartida = ({ score, pontos, partida, onClose, onFinalizar })
             Ao confirmar, a partida será encerrada.
           </p>
         </div>
-        
+
         <div className="flex-shrink-0 p-4 sm:p-5 lg:p-6 border-t border-gray-700/60">
           <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
             <button onClick={onClose} className="btn-secondary px-6 py-2 sm:px-8 sm:py-3 text-base lg:text-lg lg:px-10">
@@ -239,7 +247,7 @@ function Partida() {
       setIsModalFinalizarOpen(true);
 
       setLogMessage("Selecione um atleta e uma técnica para iniciar o rally.");
-    } catch (error) { 
+    } catch (error) {
       console.error("Erro ao buscar pontos da partida:", error);
       setLogMessage("Erro ao carregar resumo da partida.");
 
@@ -261,7 +269,7 @@ function Partida() {
 
     try {
       setIsModalFinalizarOpen(false);
-      
+
       await api.patch(`/partidas/${partida.partida_id}`, patchPartida);
       console.log("Partida finalizada: ", patchPartida);
 
