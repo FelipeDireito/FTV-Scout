@@ -14,18 +14,19 @@ def cadastra_acao(acao: schemas.Acao, db: Session):
 
 
 def cadastra_ponto(ponto: schemas.Ponto, db: Session):
-
     novo_ponto = models.Ponto(
         partida_id=ponto.partida_id,
         dupla_vencedora_id=ponto.dupla_vencedora_id,
         motivo_ponto_id=ponto.motivo_ponto_id,
-        numero_ponto_partida=ponto.numero_ponto_partida
+        numero_ponto_partida=ponto.numero_ponto_partida,
+        atleta_ponto_id=ponto.atleta_ponto_id,
+        atleta_erro_id=ponto.atleta_erro_id,
     )
     db.add(novo_ponto)
     db.commit()
     db.refresh(novo_ponto)
     
-    # 2. Atualiza todas as ações com o rally_id correspondente
+    # Atualiza todas as ações com o rally_id correspondente
     acoes_atualizadas = db.query(models.Acao).filter(models.Acao.rally_id == ponto.rally_id).update({
         "ponto_id": novo_ponto.ponto_id,
         "rally_id": None
@@ -33,3 +34,20 @@ def cadastra_ponto(ponto: schemas.Ponto, db: Session):
     db.commit()
     
     return {"ponto_criado": novo_ponto, "acoes_atualizadas": acoes_atualizadas}
+
+
+def obtem_acoes(db: Session):
+    return db.query(models.Acao).all()
+
+
+def obter_por_id(partida_id: int, db: Session):
+    pontos = db.query(models.Ponto).filter(models.Ponto.partida_id == partida_id).all()
+    return pontos
+
+
+def obter_acoes_partida_id(partida_id: int, db: Session):
+    pontos = db.query(models.Ponto).filter(models.Ponto.partida_id == partida_id).all()
+    ponto_ids = [ponto.ponto_id for ponto in pontos]
+    
+    acoes = db.query(models.Acao).filter(models.Acao.ponto_id.in_(ponto_ids)).all()
+    return acoes

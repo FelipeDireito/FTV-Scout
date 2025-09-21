@@ -34,6 +34,8 @@ class Ponto(Base):
     dupla_vencedora_id = Column(Integer, ForeignKey('duplas.dupla_id'), nullable=False)
     motivo_ponto_id = Column(Integer, ForeignKey('motivos_pontos.motivo_ponto_id'), nullable=False)
     numero_ponto_partida = Column(Integer, nullable=False)
+    atleta_ponto_id = Column(Integer, nullable=True)
+    atleta_erro_id = Column(Integer, nullable=True)
 
 
 class Acao(Base):

@@ -52,6 +52,8 @@ class Ponto(BaseModel):
     dupla_vencedora_id: int = Field(..., example=2)
     motivo_ponto_id: int = Field(..., example=1)
     numero_ponto_partida: int = Field(..., example=3)
+    atleta_ponto_id: int | None = Field(None)
+    atleta_erro_id: int | None = Field(None)
 
 
 class Acao(BaseModel):
