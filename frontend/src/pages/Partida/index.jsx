@@ -392,29 +392,29 @@ function Partida() {
       {isModalPontoOpen && <ModalPonto timeVencedor={timeVencedorForModal} onClose={() => setIsPontoModalOpen(false)} onFinalize={handleFinalizarPonto} />}
       {isModalFinalizarOpen && <ModalFinalizarPartida score={score} pontos={pontosPartida} partida={partida} onClose={fecharModalFinalizacao} onFinalizar={handleFinalizarPartida} />}
 
-      <header className="grid grid-cols-3 items-center p-4 bg-black/30 shadow-lg relative z-20">
-        <div className="text-left">
+      <header className="grid grid-cols-3 items-center p-2 md:p-4 bg-black/30 shadow-lg relative z-20">
+        <div className="text-left hidden md:block">
           <h2 className="text-lg md:text-2xl font-bold text-blue-400">DUPLA A</h2>
           <p className="text-xs md:text-sm text-gray-300 truncate">{duplas.a1.nome_atleta} / {duplas.a2.nome_atleta}</p>
         </div>
-        <div className="text-center">
-          <h1 className="text-lg md:text-2xl font-bold">{partida.nome_partida}</h1>
+        <div className="text-center col-span-3 md:col-span-1">
+          <h1 className="text-lg md:text-2xl font-bold hidden md:block">{partida.nome_partida}</h1>
           <div className="flex justify-center items-center">
-            <button onClick={() => openPointModal('A')} className="text-2xl bg-gray-700 rounded-full w-8 h-8 flex items-center justify-center hover:bg-blue-600 transition-colors">+</button>
-            <span className="text-5xl md:text-7xl font-black tracking-tighter mx-2 md:mx-4">{score.a}</span>
-            <span className="text-3xl md:text-5xl font-light text-gray-500">-</span>
-            <span className="text-5xl md:text-7xl font-black tracking-tighter mx-2 md:mx-4">{score.b}</span>
-            <button onClick={() => openPointModal('B')} className="text-2xl bg-gray-700 rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors">+</button>
+            <button onClick={() => openPointModal('A')} className="text-xl md:text-2xl bg-gray-700 rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-blue-600 transition-colors">+</button>
+            <span className="text-4xl md:text-7xl font-black tracking-tighter mx-2 md:mx-4">{score.a}</span>
+            <span className="text-2xl md:text-5xl font-light text-gray-500">-</span>
+            <span className="text-4xl md:text-7xl font-black tracking-tighter mx-2 md:mx-4">{score.b}</span>
+            <button onClick={() => openPointModal('B')} className="text-xl md:text-2xl bg-gray-700 rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-red-600 transition-colors">+</button>
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-right hidden md:block">
           <h2 className="text-lg md:text-2xl font-bold text-red-400">DUPLA B</h2>
           <p className="text-xs md:text-sm text-gray-300 truncate">{duplas.b1.nome_atleta} / {duplas.b2.nome_atleta}</p>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col md:flex-row p-3 md:p-4 gap-3 md:gap-4 overflow-y-auto">
-        <div className="flex md:flex-col justify-around gap-3 md:gap-4 md:w-[15%] h-20 md:h-full">
+      <main className="flex-1 flex flex-col md:flex-row p-2 md:p-4 gap-2 md:gap-4 overflow-hidden">
+        <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
           <ButtonAtleta atleta={duplas.a1} onClick={() => setAtletaSelecionado(duplas.a1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a1.atleta_id} corTime="blue" />
           <ButtonAtleta atleta={duplas.a2} onClick={() => setAtletaSelecionado(duplas.a2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a2.atleta_id} corTime="blue" />
         </div>
@@ -423,12 +423,12 @@ function Partida() {
           <div className="flex-grow min-h-0">
             <DisplayQuadra activeZone={activeZone} onClickZona={setActiveZone} />
           </div>
-          <div className="h-1/3 min-h-[150px] flex">
+          <div className="h-1/3 min-h-[150px] hidden md:flex">
             <RallyLog actions={acoesRally} getAtletaById={getAtletaById} />
           </div>
         </div>
 
-        <div className="flex md:flex-col justify-around gap-3 md:gap-4 md:w-[15%] h-20 md:h-full">
+        <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
           <ButtonAtleta atleta={duplas.b1} onClick={() => setAtletaSelecionado(duplas.b1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b1.atleta_id} corTime="red" />
           <ButtonAtleta atleta={duplas.b2} onClick={() => setAtletaSelecionado(duplas.b2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b2.atleta_id} corTime="red" />
         </div>
