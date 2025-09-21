@@ -217,7 +217,7 @@ function Partida() {
     setIsPontoModalOpen(true);
   };
 
-  const handleFinalizePoint = async (motivoPontoId) => {
+  const handleFinalizarPointo = async (motivoPontoId) => {
     const duplaVencedoraId = timeVencedorForModal === 'A' ? partida.dupla_a_id : partida.dupla_b_id;
 
     let atletaPontoId = null;
@@ -270,7 +270,7 @@ function Partida() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white font-sans">
-      {isModalPontoOpen && <ModalPonto timeVencedor={timeVencedorForModal} onClose={() => setIsPontoModalOpen(false)} onFinalize={handleFinalizePoint} />}
+      {isModalPontoOpen && <ModalPonto timeVencedor={timeVencedorForModal} onClose={() => setIsPontoModalOpen(false)} onFinalize={handleFinalizarPointo} />}
 
       <header className="grid grid-cols-3 items-center p-4 bg-black/30 shadow-lg relative z-20">
         <div className="text-left">
