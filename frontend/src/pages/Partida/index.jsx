@@ -46,7 +46,7 @@ const DisplayQuadra = ({ activeZone, onClickZona }) => {
 };
 
 
-const ModalPonto = ({ timeVencedor, onClose, onFinalize }) => {
+const ModalPonto = ({ timeVencedor, onClose, onFinalizar }) => {
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-2 sm:p-4">
       <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh]">
@@ -62,7 +62,7 @@ const ModalPonto = ({ timeVencedor, onClose, onFinalize }) => {
             {MOTIVOS_PONTO.map(motivo => (
               <button
                 key={motivo.id}
-                onClick={() => onFinalize(motivo.id)}
+                onClick={() => onFinalizar(motivo.id)}
                 className="btn-primary text-base py-2 sm:py-3"
               >
                 {motivo.descricao}
@@ -80,6 +80,38 @@ const ModalPonto = ({ timeVencedor, onClose, onFinalize }) => {
     </div>
   );
 };
+
+const ModalVoltarPonto = ({ onClose, onFinalizar }) => {
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md flex flex-col">
+        <div className="p-6 border-b border-gray-700">
+          <h3 className="text-2xl font-bold text-center text-yellow-400">
+            Voltar Último Ponto?
+          </h3>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <p className="text-center text-gray-300">
+            Tem certeza que deseja excluir o último ponto registrado?
+          </p>
+          <p className="text-center text-sm text-red-400 font-semibold">
+            Esta ação não pode ser desfeita.
+          </p>
+        </div>
+
+        <div className="p-4 bg-gray-900/50 rounded-b-xl">
+          <div className="flex justify-center gap-4">
+            <button onClick={onClose} className="btn-secondary px-8 py-3">Cancelar</button>
+            <button onClick={onFinalizar} className="btn-primary bg-red-600 hover:bg-red-700 px-8 py-3">Confirmar e Excluir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 
 const RallyLog = ({ actions, getAtletaById }) => {
   const getTecnicaNome = (id) => TECNICAS.find(t => t.id === id)?.nome || 'N/A';
@@ -214,13 +246,14 @@ function Partida() {
   const [score, setScore] = useState({ a: 0, b: 0 });
   const [atletaSelecionado, setAtletaSelecionado] = useState(null);
   const [activeZone, setActiveZone] = useState(null);
-  const [logMessage, setLogMessage] = useState("Selecione um atleta e uma técnica para iniciar o rally.");
+  const [logMessage, setLogMessage] = useState("Selecione um atleta para iniciar o rally.");
   const [rallyId, setRallyId] = useState(uuidv4());
   const [acoesRally, setAcoesRally] = useState([]);
   const [isModalPontoOpen, setIsPontoModalOpen] = useState(false);
   const [timeVencedorForModal, setTimeVencedorForModal] = useState(null);
   const [isModalFinalizarOpen, setIsModalFinalizarOpen] = useState(false);
   const [pontosPartida, setPontosPartida] = useState([]);
+  const [isModalVoltarPontoOpen, setIsModalVoltarPontoOpen] = useState(false);
 
   const getTimeAtleta = (atletaId) => {
     if (duplas.a1.atleta_id === atletaId || duplas.a2.atleta_id === atletaId) return 'A';
@@ -280,6 +313,44 @@ function Partida() {
       alert("Falha ao finalizar a partida.");
     }
   }
+
+  const abrirModalVoltarPonto = async () => {
+    setIsModalVoltarPontoOpen(true);
+  };
+
+  const fecharModalVoltarPonto = async () => {
+    setIsModalVoltarPontoOpen(false)
+  }
+
+  const handleVoltarPonto = async () => {
+    try {
+      setLogMessage("Excluindo último ponto...");
+
+      const response = await api.delete(`/pontuacao/voltar_ponto/${partida.partida_id}`);
+      const pontoExcluido = response.data;
+      console.log(pontoExcluido)
+
+      if (pontoExcluido && pontoExcluido.dupla_vencedora_id) {
+        const timePonto = pontoExcluido.dupla_vencedora_id === partida.dupla_a_id ? 'a' : 'b';
+        
+        setScore(prev => {
+          const newScore = prev[timePonto] > 0 ? prev[timePonto] - 1 : 0;
+          return { ...prev, [timePonto]: newScore };
+        });
+
+        setAcoesRally([]);
+        setRallyId(uuidv4());
+        setLogMessage("Último ponto removido. Novo rally.");
+      } else {
+        alert("Não há pontos registrados para serem removidos.");
+      }
+    } catch (error) {
+      console.error("Erro ao voltar o ponto:", error);
+      alert("Falha ao remover o último ponto. Verifique o console para mais detalhes.");
+    } finally {
+      setIsModalVoltarPontoOpen(false);
+    }
+  };
 
   const handleSelectTecnica = async (tecnicaId) => {
     if (!atletaSelecionado) {
@@ -368,8 +439,8 @@ function Partida() {
     };
 
     try {
-      console.log("--- SIMULANDO ENVIO DE PONTO PARA API ---");
-      console.log(JSON.stringify(pointData, null, 2));
+      // console.log("--- SIMULANDO ENVIO DE PONTO PARA API ---");
+      // console.log(JSON.stringify(pointData, null, 2));
       await api.post('/pontuacao/ponto', pointData);
       console.log("Ponto registrado com sucesso!", pointData);
 
@@ -389,8 +460,9 @@ function Partida() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white font-sans">
-      {isModalPontoOpen && <ModalPonto timeVencedor={timeVencedorForModal} onClose={() => setIsPontoModalOpen(false)} onFinalize={handleFinalizarPonto} />}
+      {isModalPontoOpen && <ModalPonto timeVencedor={timeVencedorForModal} onClose={() => setIsPontoModalOpen(false)} onFinalizar={handleFinalizarPonto} />}
       {isModalFinalizarOpen && <ModalFinalizarPartida score={score} pontos={pontosPartida} partida={partida} onClose={fecharModalFinalizacao} onFinalizar={handleFinalizarPartida} />}
+      {isModalVoltarPontoOpen && <ModalVoltarPonto onClose={fecharModalVoltarPonto} onFinalizar={handleVoltarPonto} />}
 
       <header className="grid grid-cols-3 items-center p-2 md:p-4 bg-black/30 shadow-lg relative z-20">
         <div className="text-left hidden md:block">
@@ -443,7 +515,7 @@ function Partida() {
           ))}
         </div>
         <div className="flex items-center justify-between">
-          <button className="btn-secondary py-2 px-4 text-sm">DESFAZER</button>
+          <button className="btn-secondary py-2 px-4 text-sm" onClick={abrirModalVoltarPonto}>Voltar Ponto</button>
           <div className="flex-grow text-center text-sm text-gray-400 mx-2">
             <span className="font-mono bg-gray-800 px-3 py-1 rounded">{logMessage}</span>
           </div>
@@ -455,4 +527,3 @@ function Partida() {
 }
 
 export default Partida;
-
