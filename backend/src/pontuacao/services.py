@@ -1,3 +1,4 @@
+from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 import uuid
 
@@ -51,3 +52,31 @@ def obter_acoes_partida_id(partida_id: int, db: Session):
     
     acoes = db.query(models.Acao).filter(models.Acao.ponto_id.in_(ponto_ids)).all()
     return acoes
+
+
+def volta_ponto(partida_id: int, db: Session):
+    ultimo_ponto = db.query(models.Ponto)\
+        .filter(models.Ponto.partida_id == partida_id)\
+        .order_by(models.Ponto.numero_ponto_partida.desc())\
+        .first()
+
+    if not ultimo_ponto:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nenhum ponto para voltar.")
+
+    ponto_excluido_data = {
+        "ponto_id": ultimo_ponto.ponto_id,
+        "partida_id": ultimo_ponto.partida_id,
+        "dupla_vencedora_id": ultimo_ponto.dupla_vencedora_id,
+        "motivo_ponto_id": ultimo_ponto.motivo_ponto_id,
+        "numero_ponto_partida": ultimo_ponto.numero_ponto_partida,
+        "atleta_ponto_id": ultimo_ponto.atleta_ponto_id,
+        "atleta_erro_id": ultimo_ponto.atleta_erro_id,
+    }
+
+    # Deletar as ações primeiro (FK)
+    db.query(models.Acao).filter(models.Acao.ponto_id == ultimo_ponto.ponto_id).delete(synchronize_session=False)
+
+    db.delete(ultimo_ponto)
+    db.commit()
+
+    return ponto_excluido_data

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 
 from src.core.database import get_db
-from src.pontuacao.services import cadastra_ponto, cadastra_acao, obter_por_id, obter_acoes_partida_id, obtem_acoes
+from src.pontuacao.services import cadastra_ponto, cadastra_acao, obter_por_id, obter_acoes_partida_id, obtem_acoes, volta_ponto
 from src.pontuacao.schemas import Ponto, Acao
 
 pontuacao_router = APIRouter(tags=["pontuacao"], prefix="/pontuacao")
@@ -35,3 +35,8 @@ def obter_acoes_partida(partida_id: int, db: Session = Depends(get_db)):
 @pontuacao_router.get("/{partida_id}")
 def obter_pontuacao_partida(partida_id: int, db: Session = Depends(get_db)):
     return obter_por_id(partida_id, db)
+
+
+@pontuacao_router.delete("/voltar_ponto/{partida_id}")
+def voltar_ponto(partida_id: int, db: Session = Depends(get_db)):
+    return volta_ponto(partida_id, db)

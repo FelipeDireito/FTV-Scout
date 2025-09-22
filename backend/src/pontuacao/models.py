@@ -42,7 +42,7 @@ class Acao(Base):
     __tablename__ = 'acoes'
 
     acao_id = Column(Integer, primary_key=True, index=True)
-    ponto_id = Column(Integer, ForeignKey('pontos.ponto_id'), nullable=True)
+    ponto_id = Column(Integer, ForeignKey('pontos.ponto_id', ondelete='CASCADE'), nullable=True)
     rally_id = Column(UUID_Type(as_uuid=True), nullable=True)
     atleta_id = Column(Integer, ForeignKey('atletas.atleta_id'), nullable=False)
     tipo_acao_id = Column(Integer, ForeignKey('tipos_acoes.tipo_acao_id'), nullable=False)
