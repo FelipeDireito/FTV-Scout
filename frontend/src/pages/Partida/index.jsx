@@ -332,7 +332,7 @@ function Partida() {
 
       if (pontoExcluido && pontoExcluido.dupla_vencedora_id) {
         const timePonto = pontoExcluido.dupla_vencedora_id === partida.dupla_a_id ? 'a' : 'b';
-        
+
         setScore(prev => {
           const newScore = prev[timePonto] > 0 ? prev[timePonto] - 1 : 0;
           return { ...prev, [timePonto]: newScore };
