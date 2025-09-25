@@ -4,12 +4,13 @@ import { v4 as uuidv4 } from 'uuid';
 import api from '../../services/api';
 import { TECNICAS, TIPO_ACAO_ID, MOTIVOS_PONTO } from '../../constants/jogo';
 
-const ButtonAtleta = ({ atleta, onClick, isSelecionado, corTime }) => (
+const ButtonAtleta = ({ atleta, onClick, isSelecionado, corTime, disabled }) => (
   <button
     onClick={onClick}
-    className={`w-full h-full text-lg md:text-2xl font-bold rounded-lg transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none relative shadow-md
-      ${corTime === 'blue' ? 'bg-blue-800/80 hover:bg-blue-700' : 'bg-red-800/80 hover:bg-red-700'}
+    disabled={disabled}
+    className={`w-full h-full text-lg md:text-2xl font-bold rounded-lg transition-all duration-200 ease-in-out transform focus:outline-none relative shadow-md
       ${isSelecionado ? 'ring-4 ring-yellow-400 scale-105' : 'ring-2 ring-gray-700'}
+      ${disabled ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : `${corTime === 'blue' ? 'bg-blue-800/80 hover:bg-blue-700' : 'bg-red-800/80 hover:bg-red-700'} hover:scale-105`}
     `}
   >
     {isSelecionado && <div className="absolute inset-0 bg-black/30 rounded-lg"></div>}
@@ -254,6 +255,7 @@ function Partida() {
   const [isModalFinalizarOpen, setIsModalFinalizarOpen] = useState(false);
   const [pontosPartida, setPontosPartida] = useState([]);
   const [isModalVoltarPontoOpen, setIsModalVoltarPontoOpen] = useState(false);
+  const [pontoPendente, setPontoPendente] = useState(null);
 
   const getTimeAtleta = (atletaId) => {
     if (duplas.a1.atleta_id === atletaId || duplas.a2.atleta_id === atletaId) return 'A';
@@ -352,7 +354,7 @@ function Partida() {
     }
   };
 
-  const handleSelectTecnica = async (tecnicaId) => {
+  const handleSelecionarTecnica = async (tecnicaId) => {
     if (!atletaSelecionado) {
       setLogMessage("ERRO: Selecione um JOGADOR primeiro!");
       setTimeout(() => setLogMessage("Selecione um atleta e uma técnica..."), 2000);
@@ -378,19 +380,25 @@ function Partida() {
       atleta_id: atletaSelecionado.atleta_id,
       tipo_acao_id: tipoAcaoId,
       tecnica_acao_id: tecnicaId,
+      posicao_quadra: activeZone?.zona
     };
 
 
     try {
       console.log("--- SIMULANDO ENVIO DE AÇÃO PARA API ---");
       console.log(JSON.stringify(acaoData, null, 2));
-      await api.post('/pontuacao/acao', acaoData);
-      console.log("Ação registrada com sucesso!");
 
-      setAcoesRally(prev => [...prev, acaoData]);
+      const resposta = await api.post('/pontuacao/acao', acaoData);
+      const acaoSalva = resposta.data;
+      console.log("Ação registrada com sucesso!", acaoSalva);
+
+      setAcoesRally(prev => [...prev, acaoSalva]);
+
       const tecnicaName = TECNICAS.find(t => t.id === tecnicaId)?.nome;
       setLogMessage(`Ação registrada: ${atletaSelecionado.nome_atleta.split(' ')[0]} (${tecnicaName})`);
+
       setAtletaSelecionado(null);
+      setActiveZone(null);
 
     } catch (error) {
       console.error("Erro ao registrar ação na API:", error);
@@ -407,17 +415,26 @@ function Partida() {
     setIsPontoModalOpen(true);
   };
 
-  const handleFinalizarPonto = async (motivoPontoId) => {
-    const duplaVencedoraId = timeVencedorForModal === 'A' ? partida.dupla_a_id : partida.dupla_b_id;
+  const handleFinalizarPonto = async (motivoPontoId, zonaFornecida = null) => {
+    const timeVencedor = pontoPendente ? pontoPendente.timeVencedor : timeVencedorForModal;
+    const duplaVencedoraId = timeVencedor === 'A' ? partida.dupla_a_id : partida.dupla_b_id;
+
+    const lastAction = acoesRally[acoesRally.length - 1];
+
+    const motivosExigemZona = [3, 5]; // "Ataque" e "Saque/Ace"
+
+    if (motivosExigemZona.includes(motivoPontoId) && !lastAction.posicao_quadra && !zonaFornecida) {
+      setPontoPendente({ timeVencedor, motivoPontoId });
+      setIsPontoModalOpen(false);
+      setLogMessage(`PONTO: Selecione na quadra ONDE a bola caiu.`);
+      return;
+    }
 
     let atletaPontoId = null;
     let atletaErroId = null;
 
-    const lastAction = acoesRally[acoesRally.length - 1];
-
     if (lastAction) {
       const lastPlayerId = lastAction.atleta_id;
-
       const motivoPonto = [3, 4, 5];
       const motivoErro = [1, 2];
 
@@ -439,24 +456,54 @@ function Partida() {
     };
 
     try {
-      // console.log("--- SIMULANDO ENVIO DE PONTO PARA API ---");
-      // console.log(JSON.stringify(pointData, null, 2));
       await api.post('/pontuacao/ponto', pointData);
-      console.log("Ponto registrado com sucesso!", pointData);
 
-      setScore(prev => ({ ...prev, [timeVencedorForModal.toLowerCase()]: prev[timeVencedorForModal.toLowerCase()] + 1 }));
-      setLogMessage(`Ponto para a Dupla ${timeVencedorForModal}! Novo rally.`);
+      setScore(prev => ({ ...prev, [timeVencedor.toLowerCase()]: prev[timeVencedor.toLowerCase()] + 1 }));
+      setLogMessage(`Ponto para a Dupla ${timeVencedor}! Novo rally.`);
 
       setAcoesRally([]);
       setRallyId(uuidv4());
-
     } catch (error) {
       console.error("Erro ao finalizar o ponto:", error);
       alert("Falha ao registrar o ponto.");
     } finally {
       setIsPontoModalOpen(false);
+      setPontoPendente(null);
     }
   };
+
+  const handleSelecionarZona = async (zonaInfo) => {
+    if (pontoPendente) {
+      const lastAction = acoesRally[acoesRally.length - 1];
+
+      try {
+        setLogMessage("Atualizando ação com a zona...");
+
+        const patchData = {
+          posicao_quadra: zonaInfo.zona,
+        };
+
+        // console.log(patchData, lastAction.acao_id)
+        await api.patch(`/pontuacao/acao/${lastAction.acao_id}`, patchData);
+
+        const acoesAtualizadas = [...acoesRally];
+        acoesAtualizadas[acoesAtualizadas.length - 1] = { ...lastAction, ...patchData };
+        setAcoesRally(acoesAtualizadas);
+
+        await handleFinalizarPonto(pontoPendente.motivoPontoId, zonaInfo);
+
+      } catch (error) {
+        console.error("Erro ao atualizar a ação com a zona:", error);
+        alert("Não foi possível atualizar a localização da ação.");
+        setPontoPendente(null);
+      }
+
+    } else {
+      setActiveZone(zonaInfo);
+      setLogMessage(`Zona ${zonaInfo.zona} (${zonaInfo.side}) selecionada.`);
+    }
+  };
+
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white font-sans">
@@ -487,13 +534,13 @@ function Partida() {
 
       <main className="flex-1 flex flex-col md:flex-row p-2 md:p-4 gap-2 md:gap-4 overflow-hidden">
         <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
-          <ButtonAtleta atleta={duplas.a1} onClick={() => setAtletaSelecionado(duplas.a1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a1.atleta_id} corTime="blue" />
-          <ButtonAtleta atleta={duplas.a2} onClick={() => setAtletaSelecionado(duplas.a2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a2.atleta_id} corTime="blue" />
+          <ButtonAtleta atleta={duplas.a1} onClick={() => setAtletaSelecionado(duplas.a1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a1.atleta_id} corTime="blue" disabled={!!pontoPendente} />
+          <ButtonAtleta atleta={duplas.a2} onClick={() => setAtletaSelecionado(duplas.a2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a2.atleta_id} corTime="blue" disabled={!!pontoPendente} />
         </div>
 
         <div className="flex-grow flex flex-col gap-3 min-h-0">
           <div className="flex-grow min-h-0">
-            <DisplayQuadra activeZone={activeZone} onClickZona={setActiveZone} />
+            <DisplayQuadra activeZone={activeZone} onClickZona={handleSelecionarZona} />
           </div>
           <div className="h-1/3 min-h-[150px] hidden md:flex">
             <RallyLog actions={acoesRally} getAtletaById={getAtletaById} />
@@ -501,15 +548,15 @@ function Partida() {
         </div>
 
         <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
-          <ButtonAtleta atleta={duplas.b1} onClick={() => setAtletaSelecionado(duplas.b1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b1.atleta_id} corTime="red" />
-          <ButtonAtleta atleta={duplas.b2} onClick={() => setAtletaSelecionado(duplas.b2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b2.atleta_id} corTime="red" />
+          <ButtonAtleta atleta={duplas.b1} onClick={() => setAtletaSelecionado(duplas.b1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b1.atleta_id} corTime="red" disabled={!!pontoPendente} />
+          <ButtonAtleta atleta={duplas.b2} onClick={() => setAtletaSelecionado(duplas.b2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b2.atleta_id} corTime="red" disabled={!!pontoPendente} />
         </div>
       </main>
 
       <footer className="bg-black/30 p-3 shadow-lg space-y-3">
         <div className="flex justify-center gap-2 md:gap-3 flex-wrap">
           {TECNICAS.map(tecnica => (
-            <button key={tecnica.id} onClick={() => handleSelectTecnica(tecnica.id)} className="btn-acao">
+            <button key={tecnica.id} onClick={() => handleSelecionarTecnica(tecnica.id)} className="btn-acao">
               {tecnica.nome}
             </button>
           ))}
