@@ -133,28 +133,31 @@ const ModalVoltarPonto = ({ onClose, onFinalizar }) => {
 
 
 
-const RallyLog = ({ actions, getAtletaById }) => {
+const RallyLog = ({ actions, getAtletaById, isRallyActive }) => {
   const getTecnicaNome = (id) => TECNICAS.find(t => t.id === id)?.nome || 'N/A';
-
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-
       container.scrollTop = container.scrollHeight;
     }
   }, [actions]);
 
+  const titulo = isRallyActive ? 'Rally Atual' : 'Último Rally';
+  const corTitulo = isRallyActive ? 'text-gray-300' : 'text-yellow-600';
+
   return (
     <div className="flex-grow bg-gray-800/50 rounded-lg p-3 flex flex-col">
-      <h3 className="text-lg font-semibold text-center text-gray-300 mb-2 border-b border-gray-600 pb-2">Rally Atual</h3>
+      <h3 className={`text-lg font-semibold text-center mb-2 border-b border-gray-600 pb-2 ${corTitulo}`}>
+        {titulo}
+      </h3>
       <div ref={scrollContainerRef} className="flex-grow overflow-y-auto space-y-1 pr-2">
         {actions.length === 0 ? (
           <p className="text-gray-500 text-center mt-4">Aguardando o saque...</p>
         ) : (
           actions.map((action, index) => (
-            <div key={index} className="bg-gray-900/70 p-2 rounded-md text-sm">
+            <div key={action.acao_id || index} className="bg-gray-900/70 p-2 rounded-md text-sm cursor-pointer hover:bg-gray-700/70">
               <span className="font-bold text-sky-400">{index + 1}. </span>
               <span className="font-semibold">{getAtletaById(action.atleta_id)?.nome_atleta.split(' ')[0]}</span>
               <span className="text-gray-400"> - {getTecnicaNome(action.tecnica_acao_id)}</span>
@@ -269,6 +272,7 @@ function Partida() {
   const [logMessage, setLogMessage] = useState("Selecione um atleta para iniciar o rally.");
   const [rallyId, setRallyId] = useState(uuidv4());
   const [acoesRally, setAcoesRally] = useState([]);
+  const [ultimoRally, setUltimoRally] = useState([]);
   const [isModalPontoOpen, setIsPontoModalOpen] = useState(false);
   const [timeVencedorForModal, setTimeVencedorForModal] = useState(null);
   const [isModalFinalizarOpen, setIsModalFinalizarOpen] = useState(false);
@@ -510,6 +514,7 @@ function Partida() {
       setScore(prev => ({ ...prev, [timeVencedor.toLowerCase()]: prev[timeVencedor.toLowerCase()] + 1 }));
       setLogMessage(`Ponto para a Dupla ${timeVencedor}! Novo rally.`);
 
+      setUltimoRally(acoesRally);
       setAcoesRally([]);
       setRallyId(uuidv4());
     } catch (error) {
@@ -592,8 +597,12 @@ function Partida() {
           <div className="flex-grow min-h-0">
             <DisplayQuadra activeZone={activeZone} onClickZona={handleSelecionarZona} />
           </div>
-          <div className="h-1/3 min-h-[150px] hidden md:flex">
-            <RallyLog actions={acoesRally} getAtletaById={getAtletaById} />
+          <div className="h-1/3 min-h-[100px] hidden md:flex">
+            <RallyLog
+              actions={acoesRally.length > 0 ? acoesRally : ultimoRally}
+              isRallyActive={acoesRally.length > 0}
+              getAtletaById={getAtletaById}
+            />
           </div>
         </div>
 
