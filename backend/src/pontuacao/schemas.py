@@ -72,3 +72,11 @@ class AcaoResposta(Acao):
     
     class Config:
         from_attributes = True
+
+
+class AcaoUpdate(BaseModel):
+    posicao_quadra: int | None = Field(None, example=5)
+    tecnica_acao_id: int | None = Field(None, example=2)
+    
+    class Config:
+        from_attributes = True

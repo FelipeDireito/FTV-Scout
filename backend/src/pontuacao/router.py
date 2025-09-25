@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 
 from src.core.database import get_db
-from src.pontuacao.services import cadastra_ponto, cadastra_acao, obter_por_id, obter_acoes_partida_id, obtem_acoes, volta_ponto
-from src.pontuacao.schemas import Ponto, Acao
+from src.pontuacao.services import cadastra_ponto, cadastra_acao, obter_por_id, obter_acoes_partida_id, obtem_acoes, volta_ponto, atualiza_acao
+from src.pontuacao.schemas import Ponto, Acao, AcaoUpdate, AcaoResposta
 
 pontuacao_router = APIRouter(tags=["pontuacao"], prefix="/pontuacao")
 
@@ -40,3 +40,8 @@ def obter_pontuacao_partida(partida_id: int, db: Session = Depends(get_db)):
 @pontuacao_router.delete("/voltar_ponto/{partida_id}")
 def voltar_ponto(partida_id: int, db: Session = Depends(get_db)):
     return volta_ponto(partida_id, db)
+
+
+@pontuacao_router.patch("/acao/{acao_id}", response_model=AcaoResposta)
+def atualizar_acao(acao_id: int, acao_update: AcaoUpdate, db: Session = Depends(get_db)):
+    return atualiza_acao(acao_id=acao_id, acao_update=acao_update, db=db)

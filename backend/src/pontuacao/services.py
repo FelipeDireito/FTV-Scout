@@ -80,3 +80,21 @@ def volta_ponto(partida_id: int, db: Session):
     db.commit()
 
     return ponto_excluido_data
+
+
+def atualiza_acao(acao_id: int, acao_update: schemas.AcaoUpdate, db: Session):
+    db_acao = db.query(models.Acao).filter(models.Acao.acao_id == acao_id).first()
+
+    if not db_acao:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ação não encontrada")
+
+    update_data = acao_update.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(db_acao, key, value)
+
+    db.add(db_acao)
+    db.commit()
+    db.refresh(db_acao)
+
+    return db_acao
