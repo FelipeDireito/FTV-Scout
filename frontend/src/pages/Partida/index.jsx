@@ -4,17 +4,36 @@ import { v4 as uuidv4 } from 'uuid';
 import api from '../../services/api';
 import { TECNICAS, TIPO_ACAO_ID, MOTIVOS_PONTO } from '../../constants/jogo';
 
-const ButtonAtleta = ({ atleta, onClick, isSelecionado, corTime, disabled }) => (
+const ButtonAtleta = ({ atleta, onClick, isSelecionado, corTime, disabled, isRallyStarted, onSaqueClick }) => (
   <button
     onClick={onClick}
     disabled={disabled}
-    className={`w-full h-full text-lg md:text-2xl font-bold rounded-lg transition-all duration-200 ease-in-out transform focus:outline-none relative shadow-md
+    className={`w-full h-full rounded-lg transition-all duration-200 ease-in-out transform focus:outline-none relative shadow-md flex flex-col items-center justify-center p-2 gap-1
       ${isSelecionado ? 'ring-4 ring-yellow-400 scale-105' : 'ring-2 ring-gray-700'}
       ${disabled ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : `${corTime === 'blue' ? 'bg-blue-800/80 hover:bg-blue-700' : 'bg-red-800/80 hover:bg-red-700'} hover:scale-105`}
     `}
   >
     {isSelecionado && <div className="absolute inset-0 bg-black/30 rounded-lg"></div>}
-    <span className="relative z-10">{atleta.nome_atleta}</span>
+
+    <span className="relative z-10 font-bold text-base sm:text-lg md:text-xl truncate w-full text-center">
+      {atleta.nome_atleta}
+    </span>
+
+    {!isRallyStarted && !disabled && (
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          onSaqueClick(atleta);
+        }}
+        className="relative z-20 bg-white text-black font-bold rounded-full shadow-lg hover:bg-gray-200 transition-colors cursor-pointer
+                  text-xs py-1 px-3
+                  sm:text-sm sm:py-1.5 sm:px-4"
+        role="button"
+        aria-label={`Registrar Saque para ${atleta.nome_atleta}`}
+      >
+        Saque
+      </div>
+    )}
   </button>
 );
 
@@ -406,6 +425,36 @@ function Partida() {
     }
   };
 
+  const handleSaque = async (atleta) => {
+    if (acoesRally.length > 0) return;
+
+    const acaoData = {
+      rally_id: rallyId,
+      atleta_id: atleta.atleta_id,
+      tipo_acao_id: TIPO_ACAO_ID.SAQUE,
+      tecnica_acao_id: 6,
+      posicao_quadra: null
+    };
+
+    try {
+      setLogMessage(`Registrando Saque para ${atleta.nome_atleta.split(' ')[0]}...`);
+      const resposta = await api.post('/pontuacao/acao', acaoData);
+      const acaoSalva = resposta.data;
+
+      setAcoesRally(prev => [...prev, acaoSalva]);
+
+      const tecnicaName = TECNICAS.find(t => t.id === 6)?.nome;
+      setLogMessage(`Saque registrado: ${atleta.nome_atleta.split(' ')[0]} (${tecnicaName})`);
+
+      setAtletaSelecionado(null);
+      setActiveZone(null);
+    } catch (error) {
+      console.error("Erro ao registrar saque rápido:", error);
+      alert("Falha ao registrar o saque rápido.");
+      setLogMessage("Selecione um atleta para iniciar o rally.");
+    }
+  };
+
   const openPointModal = (timeVencedor) => {
     if (acoesRally.length === 0) {
       alert("Inicie o rally registrando uma ação (saque) antes de pontuar.");
@@ -469,6 +518,7 @@ function Partida() {
     } finally {
       setIsPontoModalOpen(false);
       setPontoPendente(null);
+      setActiveZone(null);
     }
   };
 
@@ -534,8 +584,8 @@ function Partida() {
 
       <main className="flex-1 flex flex-col md:flex-row p-2 md:p-4 gap-2 md:gap-4 overflow-hidden">
         <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
-          <ButtonAtleta atleta={duplas.a1} onClick={() => setAtletaSelecionado(duplas.a1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a1.atleta_id} corTime="blue" disabled={!!pontoPendente} />
-          <ButtonAtleta atleta={duplas.a2} onClick={() => setAtletaSelecionado(duplas.a2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a2.atleta_id} corTime="blue" disabled={!!pontoPendente} />
+          <ButtonAtleta atleta={duplas.a1} onClick={() => setAtletaSelecionado(duplas.a1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a1.atleta_id} corTime="blue" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
+          <ButtonAtleta atleta={duplas.a2} onClick={() => setAtletaSelecionado(duplas.a2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a2.atleta_id} corTime="blue" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
         </div>
 
         <div className="flex-grow flex flex-col gap-3 min-h-0">
@@ -548,8 +598,8 @@ function Partida() {
         </div>
 
         <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
-          <ButtonAtleta atleta={duplas.b1} onClick={() => setAtletaSelecionado(duplas.b1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b1.atleta_id} corTime="red" disabled={!!pontoPendente} />
-          <ButtonAtleta atleta={duplas.b2} onClick={() => setAtletaSelecionado(duplas.b2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b2.atleta_id} corTime="red" disabled={!!pontoPendente} />
+          <ButtonAtleta atleta={duplas.b1} onClick={() => setAtletaSelecionado(duplas.b1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b1.atleta_id} corTime="red" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
+          <ButtonAtleta atleta={duplas.b2} onClick={() => setAtletaSelecionado(duplas.b2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b2.atleta_id} corTime="red" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
         </div>
       </main>
 
