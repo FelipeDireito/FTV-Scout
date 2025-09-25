@@ -133,7 +133,7 @@ const ModalVoltarPonto = ({ onClose, onFinalizar }) => {
 
 
 
-const RallyLog = ({ actions, getAtletaById, isRallyActive }) => {
+const RallyLog = ({ actions, getAtletaById, isRallyActive, onActionClick }) => {
   const getTecnicaNome = (id) => TECNICAS.find(t => t.id === id)?.nome || 'N/A';
   const scrollContainerRef = useRef(null);
 
@@ -157,10 +157,15 @@ const RallyLog = ({ actions, getAtletaById, isRallyActive }) => {
           <p className="text-gray-500 text-center mt-4">Aguardando o saque...</p>
         ) : (
           actions.map((action, index) => (
-            <div key={action.acao_id || index} className="bg-gray-900/70 p-2 rounded-md text-sm cursor-pointer hover:bg-gray-700/70">
+            <div
+              key={action.acao_id || index}
+              onClick={() => !isRallyActive && onActionClick && onActionClick(action)}
+              className={`bg-gray-900/70 p-2 rounded-md text-sm ${!isRallyActive ? 'cursor-pointer hover:bg-gray-700/70' : ''}`}
+            >
               <span className="font-bold text-sky-400">{index + 1}. </span>
               <span className="font-semibold">{getAtletaById(action.atleta_id)?.nome_atleta.split(' ')[0]}</span>
               <span className="text-gray-400"> - {getTecnicaNome(action.tecnica_acao_id)}</span>
+              <span className="text-gray-400"> {(action.posicao_quadra) ? `- Zona ${action.posicao_quadra}` : ''}</span>
             </div>
           ))
         )}
@@ -169,6 +174,76 @@ const RallyLog = ({ actions, getAtletaById, isRallyActive }) => {
   );
 };
 
+const ModalEditarAcao = ({ acao, onClose, onSave, getAtletaById }) => {
+  const [tecnicaId, setTecnicaId] = useState(acao?.tecnica_acao_id || '');
+  const [zona, setZona] = useState(acao?.posicao_quadra || '');
+
+  if (!acao) return null;
+
+  const atleta = getAtletaById(acao.atleta_id);
+
+  const handleSave = () => {
+    const updateData = {};
+    if (tecnicaId !== acao.tecnica_acao_id) {
+      updateData.tecnica_acao_id = tecnicaId;
+    }
+    if (zona !== acao.posicao_quadra) {
+      updateData.posicao_quadra = zona === '' ? null : Number(zona);
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      onSave(acao.acao_id, updateData);
+    } else {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md flex flex-col">
+        <div className="p-6 border-b border-gray-700">
+          <h3 className="text-2xl font-bold text-center text-yellow-400">
+            Editar Ação
+          </h3>
+          {atleta && <p className="text-center text-gray-300 mt-1">Atleta: {atleta.nome_atleta}</p>}
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div>
+            <label htmlFor="tecnica-select" className="block mb-2 text-sm font-medium text-gray-300">Técnica da Ação</label>
+            <select
+              id="tecnica-select"
+              value={tecnicaId}
+              onChange={(e) => setTecnicaId(Number(e.target.value))}
+              className="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3"
+            >
+              {TECNICAS.map(t => <option key={t.id} value={t.id}>{t.nome}</option>)}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="zona-select" className="block mb-2 text-sm font-medium text-gray-300">Posição na Quadra (Opcional)</label>
+            <select
+              id="zona-select"
+              value={zona}
+              onChange={(e) => setZona(e.target.value)}
+              className="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3"
+            >
+              <option value="">N/A</option>
+              {[1, 2, 3, 4, 5, 6].map(z => <option key={z} value={z}>Zona {z}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className="p-4 bg-gray-900/50 rounded-b-xl">
+          <div className="flex justify-center gap-4">
+            <button onClick={onClose} className="btn-secondary px-8 py-3">Cancelar</button>
+            <button onClick={handleSave} className="btn-primary px-8 py-3">Salvar Alterações</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ModalFinalizarPartida = ({ score, pontos, partida, onClose, onFinalizar }) => {
   return (
@@ -279,6 +354,8 @@ function Partida() {
   const [pontosPartida, setPontosPartida] = useState([]);
   const [isModalVoltarPontoOpen, setIsModalVoltarPontoOpen] = useState(false);
   const [pontoPendente, setPontoPendente] = useState(null);
+  const [acaoParaEditar, setAcaoParaEditar] = useState(null);
+
 
   const getTimeAtleta = (atletaId) => {
     if (duplas.a1.atleta_id === atletaId || duplas.a2.atleta_id === atletaId) return 'A';
@@ -468,11 +545,11 @@ function Partida() {
     setIsPontoModalOpen(true);
   };
 
-  const handleFinalizarPonto = async (motivoPontoId, zonaFornecida = null) => {
+  const handleFinalizarPonto = async (motivoPontoId, zonaFornecida = null, rallyActions = acoesRally) => {
     const timeVencedor = pontoPendente ? pontoPendente.timeVencedor : timeVencedorForModal;
     const duplaVencedoraId = timeVencedor === 'A' ? partida.dupla_a_id : partida.dupla_b_id;
 
-    const lastAction = acoesRally[acoesRally.length - 1];
+    const lastAction = rallyActions[rallyActions.length - 1];
 
     const motivosExigemZona = [3, 5]; // "Ataque" e "Saque/Ace"
 
@@ -514,7 +591,7 @@ function Partida() {
       setScore(prev => ({ ...prev, [timeVencedor.toLowerCase()]: prev[timeVencedor.toLowerCase()] + 1 }));
       setLogMessage(`Ponto para a Dupla ${timeVencedor}! Novo rally.`);
 
-      setUltimoRally(acoesRally);
+      setUltimoRally(rallyActions);
       setAcoesRally([]);
       setRallyId(uuidv4());
     } catch (error) {
@@ -545,7 +622,7 @@ function Partida() {
         acoesAtualizadas[acoesAtualizadas.length - 1] = { ...lastAction, ...patchData };
         setAcoesRally(acoesAtualizadas);
 
-        await handleFinalizarPonto(pontoPendente.motivoPontoId, zonaInfo);
+        await handleFinalizarPonto(pontoPendente.motivoPontoId, zonaInfo, acoesAtualizadas);
 
       } catch (error) {
         console.error("Erro ao atualizar a ação com a zona:", error);
@@ -559,12 +636,42 @@ function Partida() {
     }
   };
 
+  const handleAbrirModalEdicao = (acao) => {
+    setAcaoParaEditar(acao);
+  };
+
+  const handleSalvarEdicaoAcao = async (acaoId, updateData) => {
+    try {
+      setLogMessage("Salvando alterações na ação...");
+      const response = await api.patch(`/pontuacao/acao/${acaoId}`, updateData);
+      const acaoAtualizada = response.data;
+
+      setUltimoRally(prev =>
+        prev.map(a => (a.acao_id === acaoId ? acaoAtualizada : a))
+      );
+
+      setLogMessage("Ação atualizada com sucesso.");
+    } catch (error) {
+      console.error("Erro ao atualizar a ação:", error);
+      alert("Falha ao atualizar a ação.");
+      setLogMessage("Erro ao salvar. Tente novamente.");
+    } finally {
+      setAcaoParaEditar(null);
+    }
+  };
+
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white font-sans">
       {isModalPontoOpen && <ModalPonto timeVencedor={timeVencedorForModal} onClose={() => setIsPontoModalOpen(false)} onFinalizar={handleFinalizarPonto} />}
       {isModalFinalizarOpen && <ModalFinalizarPartida score={score} pontos={pontosPartida} partida={partida} onClose={fecharModalFinalizacao} onFinalizar={handleFinalizarPartida} />}
       {isModalVoltarPontoOpen && <ModalVoltarPonto onClose={fecharModalVoltarPonto} onFinalizar={handleVoltarPonto} />}
+      {acaoParaEditar && <ModalEditarAcao
+        acao={acaoParaEditar}
+        onClose={() => setAcaoParaEditar(null)}
+        onSave={handleSalvarEdicaoAcao}
+        getAtletaById={getAtletaById}
+      />}
 
       <header className="grid grid-cols-3 items-center p-2 md:p-4 bg-black/30 shadow-lg relative z-20">
         <div className="text-left hidden md:block">
@@ -602,6 +709,7 @@ function Partida() {
               actions={acoesRally.length > 0 ? acoesRally : ultimoRally}
               isRallyActive={acoesRally.length > 0}
               getAtletaById={getAtletaById}
+              onActionClick={handleAbrirModalEdicao}
             />
           </div>
         </div>
