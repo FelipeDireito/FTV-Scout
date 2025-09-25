@@ -57,13 +57,13 @@ class Ponto(BaseModel):
 
 
 class Acao(BaseModel):
+    acao_id: int | None = Field(None, example=1)
     ponto_id: int | None = Field(None, example=1)
     rally_id: uuid.UUID | None = Field(None, example="123e4567-e89b-12d3-a456-426614174000")
     atleta_id: int = Field(..., example=3)
     tipo_acao_id: int = Field(..., example=1)
     tecnica_acao_id: int = Field(..., example=1)
-    posicao_quadra_x: int | None = Field(None, example=5)
-    posicao_quadra_y: int | None = Field(None, example=10)
+    posicao_quadra: int | None = Field(None, example=5)
 
 
 class AcaoResposta(Acao):
