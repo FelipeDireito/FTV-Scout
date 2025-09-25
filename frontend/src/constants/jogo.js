@@ -23,7 +23,7 @@ export const TECNICAS = [
   { id: 4, nome: "Coxa" },
   { id: 5, nome: "Peito do Pé" },
   { id: 6, nome: "Chapa do Pé" },
-  { id: 7, nome: "Lateral do Pé (Chaleira)" },
+  { id: 7, nome: "Chaleira" },
   { id: 8, nome: "Bicicleta" },
   { id: 9, nome: "Shark" },
   { id: 10, nome: "Voo do Águia" },
