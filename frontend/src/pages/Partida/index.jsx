@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import api from '../../services/api';
 import { TECNICAS, TIPO_ACAO_ID, MOTIVOS_PONTO } from '../../constants/jogo';
+import useFalaParaTexto from '../../hooks/useFalaParaTexto';
+import MicIcon from '../../components/MicIcon';
 
 const ButtonAtleta = ({ atleta, onClick, isSelecionado, corTime, disabled, isRallyStarted, onSaqueClick }) => (
   <button
@@ -356,6 +358,20 @@ function Partida() {
   const [pontoPendente, setPontoPendente] = useState(null);
   const [acaoParaEditar, setAcaoParaEditar] = useState(null);
 
+  // Lógica de Fala para Texto
+  const { texto, startEscutando, stopEscutando, isEscutando, setTexto } = useFalaParaTexto({ continuous: true });
+  const [isMicFeatureEnabled, setIsMicFeatureEnabled] = useState(true); // Botão geral para ligar/desligar a feature
+
+  // Controla a ativação do microfone durante o rally
+  useEffect(() => {
+    const rallyEmAndamento = acoesRally.length > 0;
+
+    if (isMicFeatureEnabled && rallyEmAndamento && !isEscutando) {
+      startEscutando();
+    } else if ((!isMicFeatureEnabled || !rallyEmAndamento) && isEscutando) {
+      stopEscutando();
+    }
+  }, [acoesRally, isMicFeatureEnabled, isEscutando, startEscutando, stopEscutando]);
 
   const getTimeAtleta = (atletaId) => {
     if (duplas.a1.atleta_id === atletaId || duplas.a2.atleta_id === atletaId) return 'A';
@@ -454,7 +470,7 @@ function Partida() {
     }
   };
 
-  const handleSelecionarTecnica = async (tecnicaId) => {
+  const handleSelecionarTecnica = useCallback(async (tecnicaId) => {
     if (!atletaSelecionado) {
       setLogMessage("ERRO: Selecione um JOGADOR primeiro!");
       setTimeout(() => setLogMessage("Selecione um atleta e uma técnica..."), 2000);
@@ -504,7 +520,28 @@ function Partida() {
       console.error("Erro ao registrar ação na API:", error);
       alert("Falha ao registrar a ação.");
     }
-  };
+  }, [atletaSelecionado, acoesRally, rallyId, activeZone, getTimeAtleta]);
+
+  useEffect(() => {
+    // A mágica acontece aqui: só processa o comando de voz se um atleta estiver selecionado.
+    if (texto && atletaSelecionado) {
+      const textoLimpo = texto.trim().toLowerCase().replace('.', '');
+      const tecnicaEncontrada = TECNICAS.find(t => t.nome.toLowerCase() === textoLimpo);
+
+      if (tecnicaEncontrada) {
+        console.log(`Voz para ${atletaSelecionado.nome_atleta}: ${tecnicaEncontrada.nome}`);
+        setLogMessage(`Voz: ${atletaSelecionado.nome_atleta.split(' ')[0]} -> ${tecnicaEncontrada.nome}`);
+        handleSelecionarTecnica(tecnicaEncontrada.id);
+      } else {
+        console.log(`Comando de voz não reconhecido: "${texto}"`);
+        setLogMessage(`Comando não reconhecido: "${texto}"`);
+        setTimeout(() => setLogMessage("Selecione um atleta e uma técnica..."), 2500);
+      }
+      
+      // Limpa o texto do hook para não processar o mesmo comando novamente
+      setTexto('');
+    }
+  }, [texto, atletaSelecionado, setTexto, handleSelecionarTecnica]);
 
   const handleSaque = async (atleta) => {
     if (acoesRally.length > 0) return;
@@ -733,6 +770,14 @@ function Partida() {
           <div className="flex-grow text-center text-sm text-gray-400 mx-2">
             <span className="font-mono bg-gray-800 px-3 py-1 rounded">{logMessage}</span>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsMicFeatureEnabled(prev => !prev)}
+            className={`p-3 rounded-full transition-colors relative ${isEscutando ? 'bg-red-600 animate-pulse' : 'bg-gray-700 hover:bg-gray-600'}`}
+            title={isMicFeatureEnabled ? "Desativar comandos de voz" : "Ativar comandos de voz"}
+          >
+            <MicIcon className={`h-6 w-6 ${isMicFeatureEnabled ? 'text-white' : 'text-gray-400'}`} />
+          </button>
           <button className="btn-secondary py-2 px-4 text-sm" onClick={abrirModalFinalizacao}>FINALIZAR</button>
         </div>
       </footer>

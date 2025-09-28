@@ -26,7 +26,7 @@ export const TECNICAS = [
   { id: 7, nome: "Chaleira" },
   { id: 8, nome: "Bicicleta" },
   { id: 9, nome: "Shark" },
-  { id: 10, nome: "Voo do Águia" },
+  { id: 10, nome: "Voo de Águia" },
   { id: 11, nome: "Defesa Baixa (slide)" },
 ];
 

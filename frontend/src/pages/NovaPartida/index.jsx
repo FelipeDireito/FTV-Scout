@@ -1,10 +1,21 @@
 import { Link, useNavigate } from 'react-router-dom';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import useFalaParaTexto from '../../hooks/useFalaParaTexto';
+import MicIcon from '../../components/MicIcon';
 
 function NovaPartida() {
 
   const [nomePartida, setNomePartida] = useState("");
   const navigate = useNavigate();
+  const { texto, startEscutando, stopEscutando, isEscutando, setTexto } = useFalaParaTexto({ continuous: false });
+
+  useEffect(() => {
+    if (texto) {
+      setNomePartida(texto);
+      // Limpa o texto do hook para não interferir em futuras gravações
+      setTexto('');
+    }
+  }, [texto, setTexto]);
 
   const handleAvancar = () => {
     if (!nomePartida) return;
@@ -21,18 +32,27 @@ function NovaPartida() {
         </h1>
 
         <form className="space-y-6">
-          <div>
+          <div className="relative">
             <label htmlFor="match-name" className="block mb-2 text-sm font-medium text-gray-300">
               Nome da Partida / Evento
             </label>
-            <input
-              type="text"
-              id="match-name"
-              value={nomePartida}
-              onChange={(e) => setNomePartida(e.target.value)}
-              className="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-4"
-              placeholder="Ex: Semifinal Duplas A e B"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                id="match-name"
+                value={nomePartida}
+                onChange={(e) => setNomePartida(e.target.value)}
+                className="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-4"
+                placeholder="Ex: Semifinal Duplas A e B"
+              />
+              <button
+                type="button"
+                onClick={isEscutando ? stopEscutando : startEscutando}
+                className={`p-3 rounded-full transition-colors ${isEscutando ? 'bg-red-600 animate-pulse' : 'bg-gray-600 hover:bg-gray-500'}`}
+              >
+                <MicIcon className="h-6 w-6 text-white" />
+              </button>
+            </div>
           </div>
 
           <div className="mt-12 flex justify-end space-x-4">
