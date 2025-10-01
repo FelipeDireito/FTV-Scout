@@ -358,11 +358,10 @@ function Partida() {
   const [pontoPendente, setPontoPendente] = useState(null);
   const [acaoParaEditar, setAcaoParaEditar] = useState(null);
 
-  // Lógica de Fala para Texto
+  // Fala para texto
   const { texto, startEscutando, stopEscutando, isEscutando, setTexto } = useFalaParaTexto({ continuous: true });
-  const [isMicFeatureEnabled, setIsMicFeatureEnabled] = useState(true); // Botão geral para ligar/desligar a feature
+  const [isMicFeatureEnabled, setIsMicFeatureEnabled] = useState(true);
 
-  // Controla a ativação do microfone durante o rally
   useEffect(() => {
     const rallyEmAndamento = acoesRally.length > 0;
 
@@ -523,7 +522,7 @@ function Partida() {
   }, [atletaSelecionado, acoesRally, rallyId, activeZone, getTimeAtleta]);
 
   useEffect(() => {
-    // A mágica acontece aqui: só processa o comando de voz se um atleta estiver selecionado.
+
     if (texto && atletaSelecionado) {
       const textoLimpo = texto.trim().toLowerCase().replace('.', '');
       const tecnicaEncontrada = TECNICAS.find(t => t.nome.toLowerCase() === textoLimpo);
@@ -537,8 +536,8 @@ function Partida() {
         setLogMessage(`Comando não reconhecido: "${texto}"`);
         setTimeout(() => setLogMessage("Selecione um atleta e uma técnica..."), 2500);
       }
-      
-      // Limpa o texto do hook para não processar o mesmo comando novamente
+
+
       setTexto('');
     }
   }, [texto, atletaSelecionado, setTexto, handleSelecionarTecnica]);
