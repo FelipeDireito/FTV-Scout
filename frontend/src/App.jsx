@@ -5,8 +5,7 @@ import Dashboard from './pages/Dashboard';
 import NovaPartida from './pages/NovaPartida'
 import SelecionarDuplas from './pages/SelecionarDuplas';
 import Partida from './pages/Partida';
-// Crie e importe a página de Notação quando estiver pronta
-// import Notacao from './pages/Notacao';
+import PWABadge from '../PWABadge';
 
 function App() {
   return (
@@ -18,6 +17,7 @@ function App() {
         <Route path="/selecionar-duplas" element={<SelecionarDuplas />} />
         <Route path="/partida" element={<Partida />} />
       </Routes>
+      <PWABadge />
     </BrowserRouter>
   );
 }
