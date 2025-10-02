@@ -247,6 +247,33 @@ const ModalEditarAcao = ({ acao, onClose, onSave, getAtletaById }) => {
   );
 };
 
+const AcoesSidebar = ({ onSelectTecnica, onTogglePosition, position, className = '' }) => {
+  return (
+    <div className={`bg-black/30 p-2 flex flex-col gap-2 ${className}`}>
+      <button
+        onClick={onTogglePosition}
+        className="text-xs text-gray-400 hover:text-white hover:bg-gray-700 rounded p-1 transition-colors"
+        title={position === 'right' ? 'Mover para a esquerda' : 'Mover para a direita'}
+      >
+        {position === 'right' ? '←' : '→'}
+      </button>
+      <div className="flex-grow grid grid-cols-2 gap-2">
+        {TECNICAS.map(tecnica => (
+          <button
+            key={tecnica.id}
+            onClick={() => onSelectTecnica(tecnica.id)}
+            className="btn-acao h-full text-xs bg-slate-800 text-white rounded-lg px-0"
+          >
+            {tecnica.nome}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
+
 const ModalFinalizarPartida = ({ score, pontos, partida, onClose, onFinalizar }) => {
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-2 sm:p-4 lg:p-8">
@@ -358,6 +385,7 @@ function Partida() {
   const [pontoPendente, setPontoPendente] = useState(null);
   const [acaoParaEditar, setAcaoParaEditar] = useState(null);
 
+  const [sidebarPosition, setSidebarPosition] = useState('right');
   // Fala para texto
   const { texto, startEscutando, stopEscutando, isEscutando, setTexto } = useFalaParaTexto({ continuous: true });
   const [isMicFeatureEnabled, setIsMicFeatureEnabled] = useState(true);
@@ -500,9 +528,6 @@ function Partida() {
 
 
     try {
-      console.log("--- SIMULANDO ENVIO DE AÇÃO PARA API ---");
-      console.log(JSON.stringify(acaoData, null, 2));
-
       const resposta = await api.post('/pontuacao/acao', acaoData);
       const acaoSalva = resposta.data;
       console.log("Ação registrada com sucesso!", acaoSalva);
@@ -696,6 +721,10 @@ function Partida() {
     }
   };
 
+  const toggleSidebarPosition = () => {
+    setSidebarPosition(prev => (prev === 'right' ? 'left' : 'right'));
+  };
+
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white font-sans">
@@ -730,40 +759,42 @@ function Partida() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col md:flex-row p-2 md:p-4 gap-2 md:gap-4 overflow-hidden">
-        <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
-          <ButtonAtleta atleta={duplas.a1} onClick={() => setAtletaSelecionado(duplas.a1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a1.atleta_id} corTime="blue" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
-          <ButtonAtleta atleta={duplas.a2} onClick={() => setAtletaSelecionado(duplas.a2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a2.atleta_id} corTime="blue" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
-        </div>
+      <div className="flex-1 flex flex-row overflow-hidden">
+        <AcoesSidebar
+          onSelectTecnica={handleSelecionarTecnica}
+          onTogglePosition={toggleSidebarPosition}
+          position={sidebarPosition}
+          className={sidebarPosition === 'right' ? 'order-last' : ''}
+        />
 
-        <div className="flex-grow flex flex-col gap-3 min-h-0">
-          <div className="flex-grow min-h-0">
-            <DisplayQuadra activeZone={activeZone} onClickZona={handleSelecionarZona} />
+        <main className="flex-1 flex flex-col md:flex-row p-2 md:p-4 gap-2 md:gap-4 overflow-hidden">
+          <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
+            <ButtonAtleta atleta={duplas.a1} onClick={() => setAtletaSelecionado(duplas.a1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a1.atleta_id} corTime="blue" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
+            <ButtonAtleta atleta={duplas.a2} onClick={() => setAtletaSelecionado(duplas.a2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.a2.atleta_id} corTime="blue" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
           </div>
-          <div className="h-1/3 min-h-[100px] hidden md:flex">
-            <RallyLog
-              actions={acoesRally.length > 0 ? acoesRally : ultimoRally}
-              isRallyActive={acoesRally.length > 0}
-              getAtletaById={getAtletaById}
-              onActionClick={handleAbrirModalEdicao}
-            />
-          </div>
-        </div>
 
-        <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
-          <ButtonAtleta atleta={duplas.b1} onClick={() => setAtletaSelecionado(duplas.b1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b1.atleta_id} corTime="red" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
-          <ButtonAtleta atleta={duplas.b2} onClick={() => setAtletaSelecionado(duplas.b2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b2.atleta_id} corTime="red" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
-        </div>
-      </main>
+          <div className="flex-grow flex flex-col gap-3 min-h-0">
+            <div className="flex-grow min-h-0">
+              <DisplayQuadra activeZone={activeZone} onClickZona={handleSelecionarZona} />
+            </div>
+            <div className="h-1/3 min-h-[100px] hidden md:flex">
+              <RallyLog
+                actions={acoesRally.length > 0 ? acoesRally : ultimoRally}
+                isRallyActive={acoesRally.length > 0}
+                getAtletaById={getAtletaById}
+                onActionClick={handleAbrirModalEdicao}
+              />
+            </div>
+          </div>
+
+          <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
+            <ButtonAtleta atleta={duplas.b1} onClick={() => setAtletaSelecionado(duplas.b1)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b1.atleta_id} corTime="red" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
+            <ButtonAtleta atleta={duplas.b2} onClick={() => setAtletaSelecionado(duplas.b2)} isSelecionado={atletaSelecionado?.atleta_id === duplas.b2.atleta_id} corTime="red" disabled={!!pontoPendente} isRallyStarted={acoesRally.length > 0} onSaqueClick={handleSaque} />
+          </div>
+        </main>
+      </div>
 
       <footer className="bg-black/30 p-3 shadow-lg space-y-3">
-        <div className="flex justify-center gap-2 md:gap-3 flex-wrap">
-          {TECNICAS.map(tecnica => (
-            <button key={tecnica.id} onClick={() => handleSelecionarTecnica(tecnica.id)} className="btn-acao">
-              {tecnica.nome}
-            </button>
-          ))}
-        </div>
         <div className="flex items-center justify-between">
           <button className="btn-secondary py-2 px-4 text-sm" onClick={abrirModalVoltarPonto}>Voltar Ponto</button>
           <div className="flex-grow text-center text-sm text-gray-400 mx-2">
