@@ -167,7 +167,10 @@ const RallyLog = ({ actions, getAtletaById, isRallyActive, onActionClick }) => {
               <span className="font-bold text-sky-400">{index + 1}. </span>
               <span className="font-semibold">{getAtletaById(action.atleta_id)?.nome_atleta.split(' ')[0]}</span>
               <span className="text-gray-400"> - {getTecnicaNome(action.tecnica_acao_id)}</span>
-              <span className="text-gray-400"> {(action.posicao_quadra) ? `- Zona ${action.posicao_quadra}` : ''}</span>
+              <span className="text-gray-400">
+                {action.posicao_quadra_origem && ` - Zona ${action.posicao_quadra_origem}`}
+                {action.posicao_quadra_destino && ` ➔ Zona ${action.posicao_quadra_destino}`}
+              </span>
             </div>
           ))
         )}
@@ -178,7 +181,8 @@ const RallyLog = ({ actions, getAtletaById, isRallyActive, onActionClick }) => {
 
 const ModalEditarAcao = ({ acao, onClose, onSave, getAtletaById }) => {
   const [tecnicaId, setTecnicaId] = useState(acao?.tecnica_acao_id || '');
-  const [zona, setZona] = useState(acao?.posicao_quadra || '');
+  const [zonaOrigem, setZonaOrigem] = useState(acao?.posicao_quadra_origem || '');
+  const [zonaDestino, setZonaDestino] = useState(acao?.posicao_quadra_destino || '');
 
   if (!acao) return null;
 
@@ -189,8 +193,11 @@ const ModalEditarAcao = ({ acao, onClose, onSave, getAtletaById }) => {
     if (tecnicaId !== acao.tecnica_acao_id) {
       updateData.tecnica_acao_id = tecnicaId;
     }
-    if (zona !== acao.posicao_quadra) {
-      updateData.posicao_quadra = zona === '' ? null : Number(zona);
+    if (zonaOrigem !== acao.posicao_quadra_origem) {
+      updateData.posicao_quadra_origem = zonaOrigem === '' ? null : Number(zonaOrigem);
+    }
+    if (zonaDestino !== acao.posicao_quadra_destino) {
+      updateData.posicao_quadra_destino = zonaDestino === '' ? null : Number(zonaDestino);
     }
 
     if (Object.keys(updateData).length > 0) {
@@ -223,11 +230,23 @@ const ModalEditarAcao = ({ acao, onClose, onSave, getAtletaById }) => {
             </select>
           </div>
           <div>
-            <label htmlFor="zona-select" className="block mb-2 text-sm font-medium text-gray-300">Posição na Quadra (Opcional)</label>
+            <label htmlFor="zona-select" className="block mb-2 text-sm font-medium text-gray-300">Posição de Origem da Ação (Opcional)</label>
             <select
               id="zona-select"
-              value={zona}
-              onChange={(e) => setZona(e.target.value)}
+              value={zonaOrigem}
+              onChange={(e) => setZonaOrigem(e.target.value)}
+              className="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3"
+            >
+              <option value="">N/A</option>
+              {[1, 2, 3, 4, 5, 6].map(z => <option key={z} value={z}>Zona {z}</option>)}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="zona-select" className="block mb-2 text-sm font-medium text-gray-300">Posição de Destino da Ação (Opcional)</label>
+            <select
+              id="zona-select"
+              value={zonaDestino}
+              onChange={(e) => setZonaDestino(e.target.value)}
               className="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3"
             >
               <option value="">N/A</option>
@@ -524,7 +543,7 @@ function Partida() {
       atleta_id: atletaSelecionado.atleta_id,
       tipo_acao_id: tipoAcaoId,
       tecnica_acao_id: tecnicaId,
-      posicao_quadra: activeZone?.zona
+      posicao_quadra_origem: activeZone?.zona
     };
 
 
@@ -532,6 +551,27 @@ function Partida() {
       const resposta = await api.post('/pontuacao/acao', acaoData);
       const acaoSalva = resposta.data;
       console.log("Ação registrada com sucesso!", acaoSalva);
+
+      if (acoesRally.length > 0 && acaoSalva.posicao_quadra_origem) {
+        const ultimaAcao = acoesRally[acoesRally.length - 1];
+        const updateDataDestino = {
+          posicao_quadra_destino: acaoSalva.posicao_quadra_origem
+        };
+
+        try {
+          const respostaPatch = await api.patch(`/pontuacao/acao/${ultimaAcao.acao_id}`, updateDataDestino);
+          const ultimaAcaoAtualizada = respostaPatch.data;
+
+          setAcoesRally(prevAcoes =>
+            prevAcoes.map(acao =>
+              acao.acao_id === ultimaAcao.acao_id ? ultimaAcaoAtualizada : acao
+            )
+          );
+
+        } catch (patchError) {
+          console.error("Erro ao atualizar ação com destino:", patchError);
+        }
+      }
 
       setAcoesRally(prev => [...prev, acaoSalva]);
 
@@ -575,8 +615,8 @@ function Partida() {
       rally_id: rallyId,
       atleta_id: atleta.atleta_id,
       tipo_acao_id: TIPO_ACAO_ID.SAQUE,
-      tecnica_acao_id: 6,
-      posicao_quadra: null
+      tecnica_acao_id: 12,
+      posicao_quadra_origem: null
     };
 
     try {
@@ -615,7 +655,7 @@ function Partida() {
 
     const motivosExigemZona = [3, 5]; // "Ataque" e "Saque/Ace"
 
-    if (motivosExigemZona.includes(motivoPontoId) && !lastAction.posicao_quadra && !zonaFornecida) {
+    if (motivosExigemZona.includes(motivoPontoId) && !lastAction.posicao_quadra_origem && !zonaFornecida) {
       setPontoPendente({ timeVencedor, motivoPontoId });
       setIsPontoModalOpen(false);
       setLogMessage(`PONTO: Selecione na quadra ONDE a bola caiu.`);
@@ -674,7 +714,7 @@ function Partida() {
         setLogMessage("Atualizando ação com a zona...");
 
         const patchData = {
-          posicao_quadra: zonaInfo.zona,
+          posicao_quadra_origem: zonaInfo.zona,
         };
 
         // console.log(patchData, lastAction.acao_id)

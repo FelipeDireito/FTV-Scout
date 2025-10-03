@@ -48,4 +48,5 @@ class Acao(Base):
     tipo_acao_id = Column(Integer, ForeignKey('tipos_acoes.tipo_acao_id'), nullable=False)
     tecnica_acao_id = Column(Integer, ForeignKey('tecnicas_acoes.tecnica_acao_id'), nullable=False)
     timestamp_acao = Column(String, nullable=True, server_default=func.now())
-    posicao_quadra = Column(Integer, nullable=True)
+    posicao_quadra_origem = Column(Integer, nullable=True)
+    posicao_quadra_destino = Column(Integer, nullable=True)

@@ -64,7 +64,8 @@ class Acao(BaseModel):
     atleta_id: int = Field(..., example=3)
     tipo_acao_id: int = Field(..., example=1)
     tecnica_acao_id: int = Field(..., example=1)
-    posicao_quadra: int | None = Field(None, example=5)
+    posicao_quadra_origem: int | None = Field(None, example=5)
+    posicao_quadra_destino: int | None = Field(None, example=1)
 
 
 class AcaoResposta(Acao):
@@ -76,7 +77,9 @@ class AcaoResposta(Acao):
 
 
 class AcaoUpdate(BaseModel):
-    posicao_quadra: int | None = Field(None, example=5)
+    posicao_quadra_origem: int | None = Field(None, example=5)
+    posicao_quadra_destino: int | None = Field(None, example=1)
+    atleta_id: int | None = Field(None, example=3)
     tecnica_acao_id: int | None = Field(None, example=2)
     
     class Config:
