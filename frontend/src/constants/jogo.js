@@ -22,12 +22,12 @@ export const TECNICAS = [
   { id: 3, nome: "Peito" },
   { id: 4, nome: "Coxa" },
   { id: 5, nome: "Peito do Pé" },
-  { id: 6, nome: "Chapa do Pé" },
+  { id: 6, nome: "Chapa" },
   { id: 7, nome: "Chaleira" },
   { id: 8, nome: "Bicicleta" },
   { id: 9, nome: "Shark" },
-  { id: 10, nome: "Voo de Águia" },
-  { id: 11, nome: "Defesa Baixa (slide)" },
+  { id: 10, nome: "Voo" },
+  { id: 11, nome: "Slide" },
 ];
 
 export const MOTIVOS_PONTO = [
