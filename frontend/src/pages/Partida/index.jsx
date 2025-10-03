@@ -746,11 +746,11 @@ function Partida() {
         <div className="text-center col-span-3 md:col-span-1">
           <h1 className="text-lg md:text-2xl font-bold hidden md:block">{partida.nome_partida}</h1>
           <div className="flex justify-center items-center">
-            <button onClick={() => openPointModal('A')} className="text-xl md:text-2xl bg-gray-700 rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-blue-600 transition-colors">+</button>
+            <button onClick={() => openPointModal('A')} className="text-xl md:text-2xl bg-gray-700 rounded-full w-7 h-7 md:w-14 md:h-10 flex items-center justify-center hover:bg-blue-600 transition-colors">✚</button>
             <span className="text-4xl md:text-7xl font-black tracking-tighter mx-2 md:mx-4">{score.a}</span>
             <span className="text-2xl md:text-5xl font-light text-gray-500">-</span>
             <span className="text-4xl md:text-7xl font-black tracking-tighter mx-2 md:mx-4">{score.b}</span>
-            <button onClick={() => openPointModal('B')} className="text-xl md:text-2xl bg-gray-700 rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-red-600 transition-colors">+</button>
+            <button onClick={() => openPointModal('B')} className="text-xl md:text-2xl bg-gray-700 rounded-full w-7 h-7 md:w-14 md:h-10 flex items-center justify-center hover:bg-red-600 transition-colors">✚</button>
           </div>
         </div>
         <div className="text-right hidden md:block">
