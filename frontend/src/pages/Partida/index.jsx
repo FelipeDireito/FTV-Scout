@@ -503,6 +503,7 @@ function Partida() {
           return { ...prev, [timePonto]: newScore };
         });
 
+        setUltimoRally([]);
         setAcoesRally([]);
         setRallyId(uuidv4());
         setLogMessage("Último ponto removido. Novo rally.");
