@@ -652,24 +652,44 @@ function Partida() {
     const duplaVencedoraId = timeVencedor === 'A' ? partida.dupla_a_id : partida.dupla_b_id;
 
     const lastAction = rallyActions[rallyActions.length - 1];
+    let rallyActionsAtualizado = [...rallyActions];
 
     const motivosExigemZona = [3, 5]; // "Ataque" e "Saque/Ace"
 
-    if (motivosExigemZona.includes(motivoPontoId) && !lastAction.posicao_quadra_origem && !zonaFornecida) {
+    if (motivosExigemZona.includes(motivoPontoId) && !zonaFornecida) {
       setPontoPendente({ timeVencedor, motivoPontoId });
       setIsPontoModalOpen(false);
       setLogMessage(`PONTO: Selecione na quadra ONDE a bola caiu.`);
       return;
     }
 
+    if (motivosExigemZona.includes(motivoPontoId) && zonaFornecida) {
+      try {
+        setLogMessage("Atualizando destino da ação...");
+        const updateData = {
+          posicao_quadra_destino: zonaFornecida.zona
+        };
+
+        const response = await api.patch(`/pontuacao/acao/${lastAction.acao_id}`, updateData);
+        const acaoAtualizada = response.data;
+
+        rallyActionsAtualizado[rallyActionsAtualizado.length - 1] = acaoAtualizada;
+
+      } catch (error) {
+        console.error("Erro ao atualizar o destino da ação:", error);
+        alert("Falha ao salvar a zona de destino da ação. O ponto não foi registrado.");
+        setPontoPendente(null);
+        setIsPontoModalOpen(false);
+        return;
+      }
+    }
+
     let atletaPontoId = null;
     let atletaErroId = null;
-
     if (lastAction) {
       const lastPlayerId = lastAction.atleta_id;
       const motivoPonto = [3, 4, 5];
       const motivoErro = [1, 2];
-
       if (motivoPonto.includes(motivoPontoId)) {
         atletaPontoId = lastPlayerId;
       } else if (motivoErro.includes(motivoPontoId)) {
@@ -689,11 +709,10 @@ function Partida() {
 
     try {
       await api.post('/pontuacao/ponto', pointData);
-
       setScore(prev => ({ ...prev, [timeVencedor.toLowerCase()]: prev[timeVencedor.toLowerCase()] + 1 }));
       setLogMessage(`Ponto para a Dupla ${timeVencedor}! Novo rally.`);
 
-      setUltimoRally(rallyActions);
+      setUltimoRally(rallyActionsAtualizado);
       setAcoesRally([]);
       setRallyId(uuidv4());
     } catch (error) {
@@ -708,30 +727,7 @@ function Partida() {
 
   const handleSelecionarZona = async (zonaInfo) => {
     if (pontoPendente) {
-      const lastAction = acoesRally[acoesRally.length - 1];
-
-      try {
-        setLogMessage("Atualizando ação com a zona...");
-
-        const patchData = {
-          posicao_quadra_origem: zonaInfo.zona,
-        };
-
-        // console.log(patchData, lastAction.acao_id)
-        await api.patch(`/pontuacao/acao/${lastAction.acao_id}`, patchData);
-
-        const acoesAtualizadas = [...acoesRally];
-        acoesAtualizadas[acoesAtualizadas.length - 1] = { ...lastAction, ...patchData };
-        setAcoesRally(acoesAtualizadas);
-
-        await handleFinalizarPonto(pontoPendente.motivoPontoId, zonaInfo, acoesAtualizadas);
-
-      } catch (error) {
-        console.error("Erro ao atualizar a ação com a zona:", error);
-        alert("Não foi possível atualizar a localização da ação.");
-        setPontoPendente(null);
-      }
-
+      await handleFinalizarPonto(pontoPendente.motivoPontoId, zonaInfo, acoesRally);
     } else {
       setActiveZone(zonaInfo);
       setLogMessage(`Zona ${zonaInfo.zona} (${zonaInfo.side}) selecionada.`);
