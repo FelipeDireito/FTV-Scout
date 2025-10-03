@@ -18,12 +18,13 @@ class TecnicasAcoes(str, Enum):
     peito = "Peito"
     coxa = "Coxa"
     peito_pe = "Peito do Pé"
-    chapa_pe = "Chapa do Pé"
-    lateral_pe = "Lateral do Pé (Chaleira)"
+    chapa_pe = "Chapa"
+    lateral_pe = "Chaleira"
     bicicleta = "Bicicleta"
     shark = "Shark"
-    aguia = "Voo do Águia"
-    defesa_baixa = "Defesa Baixa (slide)"
+    aguia = "Voo"
+    defesa_baixa = "Slide"
+    saque = "Saque"
 
 
 class MotivosPonto(str, Enum):

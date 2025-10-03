@@ -25,12 +25,13 @@ def popular_tabelas_fixas():
         TecnicaAcao(nome_tecnica="Peito"),
         TecnicaAcao(nome_tecnica="Coxa"),
         TecnicaAcao(nome_tecnica="Peito do Pé"),
-        TecnicaAcao(nome_tecnica="Chapa do Pé"),
-        TecnicaAcao(nome_tecnica="Lateral do Pé (Chaleira)"),
+        TecnicaAcao(nome_tecnica="Chapa"),
+        TecnicaAcao(nome_tecnica="Chaleira"),
         TecnicaAcao(nome_tecnica="Bicicleta"),
         TecnicaAcao(nome_tecnica="Shark"),
-        TecnicaAcao(nome_tecnica="Voo do Águia"),
-        TecnicaAcao(nome_tecnica="Defesa Baixa (slide)")
+        TecnicaAcao(nome_tecnica="Voo"),
+        TecnicaAcao(nome_tecnica="Slide"),
+        TecnicaAcao(nome_tecnica="Saque")
     ]
 
     motivos_ponto = [
@@ -47,4 +48,3 @@ def popular_tabelas_fixas():
     
 if __name__ == "__main__":
     popular_tabelas_fixas()
-

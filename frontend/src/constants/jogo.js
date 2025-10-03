@@ -28,6 +28,7 @@ export const TECNICAS = [
   { id: 9, nome: "Shark" },
   { id: 10, nome: "Voo" },
   { id: 11, nome: "Slide" },
+  { id: 12, nome: "Saque" },
 ];
 
 export const MOTIVOS_PONTO = [

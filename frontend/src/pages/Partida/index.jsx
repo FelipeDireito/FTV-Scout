@@ -259,13 +259,14 @@ const AcoesSidebar = ({ onSelectTecnica, onTogglePosition, position, className =
       </button>
       <div className="flex-grow grid grid-cols-2 gap-2">
         {TECNICAS.map(tecnica => (
-          <button
-            key={tecnica.id}
-            onClick={() => onSelectTecnica(tecnica.id)}
-            className="btn-acao h-full text-xs bg-slate-800 text-white rounded-lg px-0"
-          >
-            {tecnica.nome}
-          </button>
+          tecnica.id === 12 ? null :
+            <button
+              key={tecnica.id}
+              onClick={() => onSelectTecnica(tecnica.id)}
+              className="btn-acao h-full text-xs bg-slate-800 text-white rounded-lg px-0"
+            >
+              {tecnica.nome}
+            </button>
         ))}
       </div>
     </div>
@@ -585,7 +586,7 @@ function Partida() {
 
       setAcoesRally(prev => [...prev, acaoSalva]);
 
-      const tecnicaName = TECNICAS.find(t => t.id === 6)?.nome;
+      const tecnicaName = TECNICAS.find(t => t.id === 12)?.nome;
       setLogMessage(`Saque registrado: ${atleta.nome_atleta.split(' ')[0]} (${tecnicaName})`);
 
       setAtletaSelecionado(null);
