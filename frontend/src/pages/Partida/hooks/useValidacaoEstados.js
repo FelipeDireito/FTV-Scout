@@ -5,6 +5,7 @@ export const useValidacaoEstados = ({
   atletaSelecionado = null,
   pontoPendente = null,
   activeZone = null,
+  getTimeAtleta = () => null,
   score = { a: 0, b: 0 },
 }) => {
 
