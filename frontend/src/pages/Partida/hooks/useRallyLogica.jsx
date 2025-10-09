@@ -135,7 +135,14 @@ export const useRallyLogica = (partida, duplas) => {
     const motivosExigemZona = [3, 5]; // "Ataque" e "Saque/Ace"
 
     if (motivosExigemZona.includes(motivoPontoId) && !zonaFornecida) {
-      setPontoPendente({ timeVencedor, motivoPontoId });
+      const timeUltimaAcao = lastAction ? getTimeAtleta(lastAction.atleta_id) : null;
+      const ladoDesabilitado = timeUltimaAcao;
+      
+      setPontoPendente({ 
+        timeVencedor, 
+        motivoPontoId,
+        ladoDesabilitado 
+      });
       setIsPontoModalOpen(false);
       setLogMessage(`PONTO: Selecione na quadra ONDE a bola caiu.`);
       return;
