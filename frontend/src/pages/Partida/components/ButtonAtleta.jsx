@@ -1,4 +1,13 @@
-const ButtonAtleta = ({ atleta, onClick, isSelecionado, corTime, disabled, isRallyStarted, onSaqueClick }) => (
+const ButtonAtleta = ({ 
+  atleta, 
+  onClick, 
+  isSelecionado, 
+  corTime, 
+  disabled, 
+  isRallyStarted, 
+  onSaqueClick,
+  disabledSaque = false
+}) => (
   <button
     onClick={onClick}
     disabled={disabled}
@@ -13,7 +22,7 @@ const ButtonAtleta = ({ atleta, onClick, isSelecionado, corTime, disabled, isRal
       {atleta.nome_atleta}
     </span>
 
-    {!isRallyStarted && !disabled && (
+    {!isRallyStarted && !disabledSaque && (
       <div
         onClick={(e) => {
           e.stopPropagation();

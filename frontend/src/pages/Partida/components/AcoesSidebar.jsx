@@ -1,6 +1,12 @@
 import { TECNICAS } from '../../../constants/jogo';
 
-const AcoesSidebar = ({ onSelectTecnica, onTogglePosition, position, className = '' }) => {
+const AcoesSidebar = ({ 
+  onSelectTecnica, 
+  onTogglePosition, 
+  position, 
+  className = '',
+  disabled = false
+}) => {
   return (
     <div className={`bg-black/30 p-2 flex flex-col gap-2 ${className}`}>
       <button
@@ -16,7 +22,12 @@ const AcoesSidebar = ({ onSelectTecnica, onTogglePosition, position, className =
             <button
               key={tecnica.id}
               onClick={() => onSelectTecnica(tecnica.id)}
-              className="btn-acao h-full text-xs bg-slate-800 text-white rounded-lg px-0"
+              disabled={disabled}
+              className={`btn-acao h-full text-xs rounded-lg px-0 transition-colors
+                ${disabled 
+                  ? 'bg-gray-700 text-gray-500 cursor-not-allowed' 
+                  : 'bg-slate-800 text-white hover:bg-slate-700'
+                }`}
             >
               {tecnica.nome}
             </button>

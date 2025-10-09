@@ -1,11 +1,24 @@
-const DisplayQuadra = ({ activeZone, onClickZona }) => {
+const DisplayQuadra = ({ 
+  activeZone, 
+  onClickZona, 
+  disabled = false, 
+  obrigatorio = false,
+  isZonaDesabilitada = () => false 
+}) => {
   const renderZona = (side, numeroZona) => {
     const isSelecionado = activeZone?.side === side && activeZone?.zona === numeroZona;
+    const zonaDesabilitada = isZonaDesabilitada(side);
+    const isDisabled = disabled || zonaDesabilitada;
+    
     return (
       <div
         key={`${side}-${numeroZona}`}
-        onClick={() => onClickZona({ side, zona: numeroZona })}
-        className={`relative flex items-center justify-center cursor-pointer transition-all duration-150 ease-in-out border border-white/40 text-gray-800 font-bold text-xl md:text-2xl rounded-sm ${isSelecionado ? 'bg-sky-500/80 text-white shadow-lg' : 'hover:bg-sky-500/30'}`}
+        onClick={() => !isDisabled && onClickZona({ side, zona: numeroZona })}
+        className={`relative flex items-center justify-center transition-all duration-150 ease-in-out border text-gray-800 font-bold text-xl md:text-2xl rounded-sm
+          ${isDisabled ? 'cursor-not-allowed opacity-30  bg-gray-700' : 'cursor-pointer border-white/40'}
+          ${obrigatorio && !zonaDesabilitada ? 'border-yellow-400 border-2 animate-pulse' : ''}
+          ${isSelecionado ? 'bg-sky-500/80 text-white shadow-lg' : isDisabled ? 'hover:bg-transparent' : 'hover:bg-sky-500/30'}
+        `}
       >
         {numeroZona}
         {isSelecionado && <div className="absolute inset-0 border-4 border-white rounded-sm animate-pulse"></div>}
