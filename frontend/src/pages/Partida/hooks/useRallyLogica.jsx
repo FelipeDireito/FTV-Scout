@@ -178,6 +178,10 @@ export const useRallyLogica = (partida, duplas) => {
           posicao_quadra_destino: zonaFornecida.zona
         };
 
+        if (lastAction.tipo_acao_id !== TIPO_ACAO_ID.SAQUE) {
+          updateData.tipo_acao_id = TIPO_ACAO_ID.ATAQUE;
+        }
+
         const response = await api.patch(`/pontuacao/acao/${lastAction.acao_id}`, updateData);
         const acaoAtualizada = response.data;
 
