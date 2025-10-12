@@ -35,9 +35,16 @@ export const useRallyLogica = (partida, duplas) => {
       const lastAction = acoesRally[tamanhoRally - 1];
       const timeAtletaAtual = getTimeAtleta(atletaSelecionado.atleta_id);
       const timeUltimoJogador = getTimeAtleta(lastAction.atleta_id);
-      tipoAcaoId = (timeAtletaAtual !== timeUltimoJogador)
-        ? TIPO_ACAO_ID.RECEPCAO_DEFESA
-        : TIPO_ACAO_ID.LEVANTAMENTO;
+
+      if (timeAtletaAtual !== timeUltimoJogador) {
+        tipoAcaoId = TIPO_ACAO_ID.RECEPCAO_DEFESA;
+      } else {
+        if (lastAction.tipo_acao_id === TIPO_ACAO_ID.RECEPCAO_DEFESA) {
+          tipoAcaoId = TIPO_ACAO_ID.LEVANTAMENTO;
+        } else {
+          tipoAcaoId = TIPO_ACAO_ID.ATAQUE;
+        }
+      }
     }
 
     const acaoData = {
@@ -53,23 +60,38 @@ export const useRallyLogica = (partida, duplas) => {
       const acaoSalva = resposta.data;
       console.log("Ação registrada com sucesso!", acaoSalva);
 
-      if (acoesRally.length > 0 && acaoSalva.posicao_quadra_origem) {
+      if (acoesRally.length > 0) {
         const ultimaAcao = acoesRally[acoesRally.length - 1];
-        const updateDataDestino = {
-          posicao_quadra_destino: acaoSalva.posicao_quadra_origem
-        };
+        const timeAtletaAtual = getTimeAtleta(acaoSalva.atleta_id);
+        const timeUltimoJogador = getTimeAtleta(ultimaAcao.atleta_id);
 
-        try {
-          const respostaPatch = await api.patch(`/pontuacao/acao/${ultimaAcao.acao_id}`, updateDataDestino);
-          const ultimaAcaoAtualizada = respostaPatch.data;
+        const updateData = {};
 
-          setAcoesRally(prevAcoes =>
-            prevAcoes.map(acao =>
-              acao.acao_id === ultimaAcao.acao_id ? ultimaAcaoAtualizada : acao
-            )
-          );
-        } catch (patchError) {
-          console.error("Erro ao atualizar ação com destino:", patchError);
+        if (acaoSalva.posicao_quadra_origem) {
+          updateData.posicao_quadra_destino = acaoSalva.posicao_quadra_origem;
+        }
+        if (
+          ultimaAcao.tipo_acao_id !== TIPO_ACAO_ID.ATAQUE &&
+          timeAtletaAtual !== timeUltimoJogador &&
+          ultimaAcao.tipo_acao_id !== TIPO_ACAO_ID.SAQUE) {
+          updateData.tipo_acao_id = TIPO_ACAO_ID.ATAQUE;
+        }
+
+        if (Object.keys(updateData).length > 0) {
+          try {
+            const respostaPatch = await api.patch(`/pontuacao/acao/${ultimaAcao.acao_id}`, updateData);
+            const ultimaAcaoAtualizada = respostaPatch.data;
+
+            console.log("PATCH:", updateData)
+
+            setAcoesRally(prevAcoes =>
+              prevAcoes.map(acao =>
+                acao.acao_id === ultimaAcao.acao_id ? ultimaAcaoAtualizada : acao
+              )
+            );
+          } catch (patchError) {
+            console.error("Erro ao atualizar ação com destino:", patchError);
+          }
         }
       }
 
@@ -98,6 +120,7 @@ export const useRallyLogica = (partida, duplas) => {
     };
 
     try {
+      console.log(acaoData)
       setLogMessage(`Registrando Saque para ${atleta.nome_atleta.split(' ')[0]}...`);
       const resposta = await api.post('/pontuacao/acao', acaoData);
       const acaoSalva = resposta.data;
@@ -137,11 +160,11 @@ export const useRallyLogica = (partida, duplas) => {
     if (motivosExigemZona.includes(motivoPontoId) && !zonaFornecida) {
       const timeUltimaAcao = lastAction ? getTimeAtleta(lastAction.atleta_id) : null;
       const ladoDesabilitado = timeUltimaAcao;
-      
-      setPontoPendente({ 
-        timeVencedor, 
+
+      setPontoPendente({
+        timeVencedor,
         motivoPontoId,
-        ladoDesabilitado 
+        ladoDesabilitado
       });
       setIsPontoModalOpen(false);
       setLogMessage(`PONTO: Selecione na quadra ONDE a bola caiu.`);
@@ -192,6 +215,7 @@ export const useRallyLogica = (partida, duplas) => {
     };
 
     try {
+      console.log(pointData)
       await api.post('/pontuacao/ponto', pointData);
       setScore(prev => ({ ...prev, [timeVencedor.toLowerCase()]: prev[timeVencedor.toLowerCase()] + 1 }));
       setLogMessage(`Ponto para a Dupla ${timeVencedor}! Novo rally.`);
