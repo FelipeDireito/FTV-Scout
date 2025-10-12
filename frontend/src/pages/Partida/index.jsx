@@ -108,6 +108,7 @@ function Partida() {
         onClose={() => handleAbrirModalEdicao(null)}
         onSave={(id, data) => handleSalvarEdicaoAcao(id, data, setLogMessage, onAcaoAtualizada)}
         getAtletaById={getAtletaById}
+        atletas={[duplas.a1, duplas.a2, duplas.b1, duplas.b2]}
       />}
 
       <header className="grid grid-cols-3 items-center p-2 md:p-4 bg-black/30 shadow-lg relative z-20">
