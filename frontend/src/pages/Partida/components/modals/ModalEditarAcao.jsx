@@ -22,7 +22,7 @@ const ModalEditarAcao = ({ acao, onClose, onSave, getAtletaById, atletas }) => {
     if (zonaDestino !== acao.posicao_quadra_destino) {
       updateData.posicao_quadra_destino = zonaDestino === '' ? null : Number(zonaDestino);
     }
-    if (atletaId !== acao.atleta_id){
+    if (atletaId !== acao.atleta_id) {
       updateData.atleta_id = atletaId;
     }
 
