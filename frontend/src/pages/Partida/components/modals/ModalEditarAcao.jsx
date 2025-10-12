@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { TECNICAS } from '../../../../constants/jogo';
 
-const ModalEditarAcao = ({ acao, onClose, onSave, getAtletaById }) => {
+const ModalEditarAcao = ({ acao, onClose, onSave, getAtletaById, atletas }) => {
   const [tecnicaId, setTecnicaId] = useState(acao?.tecnica_acao_id || '');
   const [zonaOrigem, setZonaOrigem] = useState(acao?.posicao_quadra_origem || '');
   const [zonaDestino, setZonaDestino] = useState(acao?.posicao_quadra_destino || '');
+  const [atletaId, setAtletaId] = useState(acao?.atleta_id || '');
 
   if (!acao) return null;
 
-  const atleta = getAtletaById(acao.atleta_id);
+  const atleta = getAtletaById(atletaId);
 
   const handleSave = () => {
     const updateData = {};
@@ -20,6 +21,9 @@ const ModalEditarAcao = ({ acao, onClose, onSave, getAtletaById }) => {
     }
     if (zonaDestino !== acao.posicao_quadra_destino) {
       updateData.posicao_quadra_destino = zonaDestino === '' ? null : Number(zonaDestino);
+    }
+    if (atletaId !== acao.atleta_id){
+      updateData.atleta_id = atletaId;
     }
 
     if (Object.keys(updateData).length > 0) {
@@ -40,6 +44,17 @@ const ModalEditarAcao = ({ acao, onClose, onSave, getAtletaById }) => {
         </div>
 
         <div className="p-6 space-y-6">
+          <div>
+            <label htmlFor="atleta-select" className="block mb-2 text-sm font-medium text-gray-300">Atleta:</label>
+            <select
+              id="atleta-select"
+              value={atletaId}
+              onChange={(e) => setAtletaId(Number(e.target.value))}
+              className="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3"
+            >
+              {atletas.map(a => <option key={a.atleta_id} value={a.atleta_id}>{a.nome_atleta}</option>)}
+            </select>
+          </div>
           <div>
             <label htmlFor="tecnica-select" className="block mb-2 text-sm font-medium text-gray-300">Técnica da Ação</label>
             <select
