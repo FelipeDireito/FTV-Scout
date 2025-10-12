@@ -7,6 +7,7 @@ from src.atletas.router import atletas_router
 from src.partidas.router import partidas_router
 from src.duplas.router import duplas_router
 from src.pontuacao.router import pontuacao_router
+from src.estatisticas.router import estatisticas_router
 
 app = FastAPI(
     title="FTV",
@@ -28,3 +29,4 @@ app.include_router(partidas_router, prefix="/api/v1")
 app.include_router(atletas_router, prefix="/api/v1")
 app.include_router(duplas_router, prefix="/api/v1")
 app.include_router(pontuacao_router, prefix="/api/v1")
+app.include_router(estatisticas_router, prefix="/api/v1")
