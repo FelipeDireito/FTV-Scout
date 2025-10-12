@@ -81,6 +81,7 @@ class AcaoUpdate(BaseModel):
     posicao_quadra_destino: int | None = Field(None, example=1)
     atleta_id: int | None = Field(None, example=3)
     tecnica_acao_id: int | None = Field(None, example=2)
+    tipo_acao_id: int | None = Field(None, example=1)
     
     class Config:
         from_attributes = True
