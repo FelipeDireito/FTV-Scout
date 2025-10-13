@@ -160,6 +160,7 @@ def obtem_estatisticas_dupla(db: Session, dupla_id: int, partida_id: int = None)
         "dupla_id": dupla.dupla_id,
         "nome_dupla": dupla.nome_dupla,
         "atletas": nomes_atletas,
+        "atletas_ids": atletas_ids,
         "total_pontos": total_pontos,
         "total_aces": total_aces,
         "total_pontos_ataque": total_pontos_ataque,
@@ -764,6 +765,7 @@ def obtem_estatisticas_completas_dupla(db: Session, dupla_id: int, partida_id: i
         "dupla_id": resumo["dupla_id"],
         "nome_dupla": resumo["nome_dupla"],
         "atletas": resumo["atletas"],
+        "atletas_ids": resumo["atletas_ids"],
         
         "total_pontos": resumo["total_pontos"],
         "total_aces": resumo["total_aces"],

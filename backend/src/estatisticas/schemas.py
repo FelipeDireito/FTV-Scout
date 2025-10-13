@@ -17,10 +17,11 @@ class AtletaResumo(BaseModel):
 
 
 class DuplaResumo(BaseModel):
-
+    
     dupla_id: int
     nome_dupla: str
     atletas: List[str]
+    atletas_ids: List[int]
     total_pontos: int
     total_aces: int
     total_pontos_ataque: int
@@ -81,6 +82,7 @@ class DuplaEstatisticasCompletas(BaseModel):
     dupla_id: int
     nome_dupla: str
     atletas: List[str]
+    atletas_ids: List[int]
 
     total_pontos: int
     total_aces: int
