@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from src.core.database import get_db
 from src.duplas.schemas import Dupla, DuplaLeitura, AdicionarAtletaDupla
-from src.duplas.services import criar_dupla, listar_dupla, adicionar_atleta_a_dupla
+from src.duplas.services import criar_dupla, listar_dupla, adicionar_atleta_a_dupla, obtem_dupla
 
 
 duplas_router = APIRouter(tags=["duplas"], prefix="/duplas")
@@ -17,6 +17,9 @@ def cadastrar_dupla(dupla: Dupla, db: Session = Depends(get_db)):
         atletas_ids=[a.atleta_id for a in db_dupla.atletas]
     )
 
+@duplas_router.get("/{dupla_id}")
+def obter_dupla(dupla_id: int, db: Session = Depends(get_db)):
+    return obtem_dupla(db, dupla_id)
 
 @duplas_router.get("")
 def listar_duplas(db: Session = Depends(get_db)):
