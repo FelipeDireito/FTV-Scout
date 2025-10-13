@@ -1,3 +1,5 @@
+from http import HTTPStatus
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from src.atletas.models import Atleta
 
@@ -19,3 +21,13 @@ def deleta_atleta(db: Session, atleta_id: int):
         db.commit()
         return {"message": f"Atleta {atleta_id} deletado com sucesso"}
     return {"message": f"Atleta {atleta_id} não encontrado"}
+
+
+def obtem_atleta(atleta_id: int, db: Session):
+    atleta = db.query(Atleta).filter(Atleta.atleta_id == atleta_id).first()
+
+    if not atleta:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Atleta não encontrada")
+        
+
+    return atleta

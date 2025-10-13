@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from src.atletas.services import criar_atleta, obter_todos_atletas, deleta_atleta
+from src.atletas.services import criar_atleta, obter_todos_atletas, deleta_atleta, obtem_atleta
 from src.atletas.schemas import Atleta
 from src.core.database import get_db
 
@@ -13,8 +13,8 @@ def cadastrar_atleta(atleta: Atleta, db: Session = Depends(get_db)):
     return criar_atleta(db, atleta)
 
 @atletas_router.get("/{atleta_id}")
-def obter_atleta(atleta_id: int):
-    return {"atleta_id": atleta_id, "nome": "Nome do Atleta"}
+def obter_atleta(atleta_id: int, db: Session = Depends(get_db)):
+    return obtem_atleta(atleta_id, db)
 
 @atletas_router.get("")
 def listar_atletas(db: Session = Depends(get_db)):
