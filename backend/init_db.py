@@ -12,11 +12,12 @@ def popular_tabelas_fixas():
     
     tipos_acoes = [
         TipoAcao(nome_acao="Saque"),
-        TipoAcao(nome_acao="Recepção/Defesa"),
+        TipoAcao(nome_acao="Defesa"),
         TipoAcao(nome_acao="Levantamento"),
         TipoAcao(nome_acao="1º Toque de Correção"),
         TipoAcao(nome_acao="Ataque"),
-        TipoAcao(nome_acao="Bloqueio")
+        TipoAcao(nome_acao="Bloqueio"),
+        TipoAcao(nome_acao="Recepção")
     ]
 
     tecnicas = [

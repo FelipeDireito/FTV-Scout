@@ -5,11 +5,12 @@ import uuid
 
 class TiposAcoes(str, Enum):
     saque = "Saque"
-    recepcao = "Recepção/Defesa"
+    defesa = "Defesa"
     levantamento = "Levantamento"
     primeiro_toque_correcao = "1º Toque de Correção"
     ataque = "Ataque"
     bloqueio = "Bloqueio"
+    recepcao = "Recepção"
 
 
 class TecnicasAcoes(str, Enum):
