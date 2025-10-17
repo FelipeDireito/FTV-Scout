@@ -7,17 +7,7 @@ from src.pontuacao.models import Acao, MotivoPonto, Ponto, TipoAcao
 
 
 def obtem_estatisticas_atleta(db: Session, atleta_id: int, partida_id: int = None):
-    """
-    Calcula estatísticas resumidas de um atleta.
-    
-    Args:
-        db: Sessão do banco de dados
-        atleta_id: ID do atleta
-        partida_id: ID da partida (opcional, para filtrar por partida específica)
-    
-    Returns:
-        Dicionário com estatísticas do atleta ou None se não encontrado
-    """
+
     atleta = db.query(Atleta).filter(Atleta.atleta_id == atleta_id).first()
     if not atleta:
         return None
@@ -77,19 +67,6 @@ def obtem_estatisticas_atleta(db: Session, atleta_id: int, partida_id: int = Non
 
 
 def obtem_estatisticas_dupla(db: Session, dupla_id: int, partida_id: int = None):
-    """
-    Calcula estatísticas resumidas de uma dupla.
-    
-    Filtra apenas as partidas onde a dupla jogou em conjunto.
-    
-    Args:
-        db: Sessão do banco de dados
-        dupla_id: ID da dupla
-        partida_id: ID da partida (opcional, para filtrar por partida específica)
-    
-    Returns:
-        Dicionário com estatísticas da dupla
-    """
     
     dupla = db.query(Dupla).filter(Dupla.dupla_id == dupla_id).first()
     
@@ -160,6 +137,7 @@ def obtem_estatisticas_dupla(db: Session, dupla_id: int, partida_id: int = None)
         "dupla_id": dupla.dupla_id,
         "nome_dupla": dupla.nome_dupla,
         "atletas": nomes_atletas,
+        "atletas_ids": atletas_ids,
         "total_pontos": total_pontos,
         "total_aces": total_aces,
         "total_pontos_ataque": total_pontos_ataque,
@@ -171,17 +149,7 @@ def obtem_estatisticas_dupla(db: Session, dupla_id: int, partida_id: int = None)
 
 
 def obtem_estatisticas_ataque_atleta(db: Session, atleta_id: int, partida_id: int = None):
-    """
-    Calcula estatísticas de ataque de um atleta.
-    
-    Args:
-        db: Sessão do banco de dados
-        atleta_id: ID do atleta
-        partida_id: ID da partida (opcional)
-    
-    Returns:
-        Dicionário com estatísticas de ataque ou None se não encontrado
-    """
+
     atleta = db.query(Atleta).filter(Atleta.atleta_id == atleta_id).first()
     if not atleta:
         return None
@@ -248,7 +216,7 @@ def obtem_estatisticas_ataque_atleta(db: Session, atleta_id: int, partida_id: in
             erros_ataque += 1
     
 
-    aproveitamento = (pontos / tentativas * 100) if tentativas > 0 else 0.0
+    aproveitamento = ((tentativas - erros_ataque) / tentativas * 100) if tentativas > 0 else 0.0
     eficiencia = ((pontos - erros_ataque) / tentativas * 100) if tentativas > 0 else 0.0
     
     return {
@@ -263,17 +231,7 @@ def obtem_estatisticas_ataque_atleta(db: Session, atleta_id: int, partida_id: in
 
 
 def obtem_estatisticas_saque_atleta(db: Session, atleta_id: int, partida_id: int = None):
-    """
-    Calcula estatísticas de saque de um atleta.
-    
-    Args:
-        db: Sessão do banco de dados
-        atleta_id: ID do atleta
-        partida_id: ID da partida (opcional)
-    
-    Returns:
-        Dicionário com estatísticas de saque ou None se não encontrado
-    """
+
     atleta = db.query(Atleta).filter(Atleta.atleta_id == atleta_id).first()
     if not atleta:
         return None
@@ -335,7 +293,7 @@ def obtem_estatisticas_saque_atleta(db: Session, atleta_id: int, partida_id: int
         if acao_saque:
             erros_saque += 1
     
-    aproveitamento = (aces / tentativas * 100) if tentativas > 0 else 0.0
+    aproveitamento = ((tentativas - erros_saque) / tentativas * 100) if tentativas > 0 else 0.0
     eficiencia = ((aces - erros_saque) / tentativas * 100) if tentativas > 0 else 0.0
     
     return {
@@ -350,22 +308,12 @@ def obtem_estatisticas_saque_atleta(db: Session, atleta_id: int, partida_id: int
 
 
 def obtem_estatisticas_defesa_atleta(db: Session, atleta_id: int, partida_id: int = None):
-    """
-    Calcula estatísticas de defesa/recepção de um atleta.
-    
-    Args:
-        db: Sessão do banco de dados
-        atleta_id: ID do atleta
-        partida_id: ID da partida (opcional)
-    
-    Returns:
-        Dicionário com estatísticas de defesa ou None se não encontrado
-    """
+
     atleta = db.query(Atleta).filter(Atleta.atleta_id == atleta_id).first()
     if not atleta:
         return None
     
-    tipo_defesa = db.query(TipoAcao).filter(TipoAcao.nome_acao == "Recepção/Defesa").first()
+    tipo_defesa = db.query(TipoAcao).filter(TipoAcao.nome_acao == "Defesa").first()
     if not tipo_defesa:
         return None
     
@@ -385,7 +333,7 @@ def obtem_estatisticas_defesa_atleta(db: Session, atleta_id: int, partida_id: in
             "nome": atleta.nome_atleta,
             "tentativas": 0,
             "erros_que_viraram_ponto": 0,
-            "eficiencia_defensiva": 0.0
+            "aproveitamento_defesa": 0.0
         }
     
     motivo_erro_nao_forcado = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Erro não forçado").first()
@@ -410,29 +358,81 @@ def obtem_estatisticas_defesa_atleta(db: Session, atleta_id: int, partida_id: in
         if acao_defesa:
             erros_defesa += 1
     
-    eficiencia_defensiva = ((tentativas - erros_defesa) / tentativas * 100) if tentativas > 0 else 0.0
+    aproveitamento_defesa = ((tentativas - erros_defesa) / tentativas * 100) if tentativas > 0 else 0.0
     
     return {
         "atleta_id": atleta.atleta_id,
         "nome": atleta.nome_atleta,
         "tentativas": tentativas,
         "erros_que_viraram_ponto": erros_defesa,
-        "eficiencia_defensiva": round(eficiencia_defensiva, 2)
+        "aproveitamento_defesa": round(aproveitamento_defesa, 2)
+    }
+
+
+def obtem_estatisticas_recepcao_atleta(db: Session, atleta_id: int, partida_id: int = None):
+
+    atleta = db.query(Atleta).filter(Atleta.atleta_id == atleta_id).first()
+    if not atleta:
+        return None
+    
+    tipo_recepcao = db.query(TipoAcao).filter(TipoAcao.nome_acao == "Recepção").first()
+    if not tipo_recepcao:
+        return None
+    
+    acoes_query = db.query(Acao).filter(
+        Acao.atleta_id == atleta_id,
+        Acao.tipo_acao_id == tipo_recepcao.tipo_acao_id
+    )
+
+    if partida_id:
+        acoes_query = acoes_query.join(Ponto).filter(Ponto.partida_id == partida_id)
+    
+    tentativas = acoes_query.count()
+
+    if tentativas == 0:
+        return {
+            "atleta_id": atleta.atleta_id,
+            "nome": atleta.nome_atleta,
+            "tentativas": 0,
+            "erros_que_viraram_ponto": 0,
+            "aproveitamento_recepcao": 0.0
+        }
+    
+    motivo_erro_nao_forcado = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Erro não forçado").first()
+    motivo_erro_forcado = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Erro forçado").first()
+    
+    erros_query = db.query(Ponto).filter(
+        Ponto.atleta_erro_id == atleta_id
+    ).filter(
+        (Ponto.motivo_ponto_id == motivo_erro_nao_forcado.motivo_ponto_id if motivo_erro_nao_forcado else -1) |
+        (Ponto.motivo_ponto_id == motivo_erro_forcado.motivo_ponto_id if motivo_erro_forcado else -1)
+    )
+    if partida_id:
+        erros_query = erros_query.filter(Ponto.partida_id == partida_id)
+    
+    erros_recepcao = 0
+    for ponto in erros_query.all():
+        acao_recepcao = db.query(Acao).filter(
+            Acao.ponto_id == ponto.ponto_id,
+            Acao.atleta_id == atleta_id,
+            Acao.tipo_acao_id == tipo_recepcao.tipo_acao_id
+        ).first()
+        if acao_recepcao:
+            erros_recepcao += 1
+    
+    aproveitamento_recepcao = ((tentativas - erros_recepcao) / tentativas * 100) if tentativas > 0 else 0.0
+    
+    return {
+        "atleta_id": atleta.atleta_id,
+        "nome": atleta.nome_atleta,
+        "tentativas": tentativas,
+        "erros_que_viraram_ponto": erros_recepcao,
+        "aproveitamento_recepcao": round(aproveitamento_recepcao, 2)
     }
 
 
 def obtem_estatisticas_ataque_dupla(db: Session, dupla_id: int, partida_id: int = None):
-    """
-    Calcula estatísticas de ataque de uma dupla
-    
-    Args:
-        db: Sessão do banco de dados
-        dupla_id: ID da dupla
-        partida_id: ID da partida (opcional)
-    
-    Returns:
-        Dicionário com estatísticas de ataque da dupla ou None se não encontrada
-    """
+
     dupla = db.query(Dupla).filter(Dupla.dupla_id == dupla_id).first()
     if not dupla:
         return None
@@ -508,7 +508,7 @@ def obtem_estatisticas_ataque_dupla(db: Session, dupla_id: int, partida_id: int 
         if acao_ataque:
             erros += 1
     
-    aproveitamento = (pontos / tentativas * 100) if tentativas > 0 else 0.0
+    aproveitamento = ((tentativas - erros) / tentativas * 100) if tentativas > 0 else 0.0
     eficiencia = ((pontos - erros) / tentativas * 100) if tentativas > 0 else 0.0
     
     return {
@@ -523,17 +523,7 @@ def obtem_estatisticas_ataque_dupla(db: Session, dupla_id: int, partida_id: int 
 
 
 def obtem_estatisticas_saque_dupla(db: Session, dupla_id: int, partida_id: int = None):
-    """
-    Calcula estatísticas de saque de uma dupla.
-    
-    Args:
-        db: Sessão do banco de dados
-        dupla_id: ID da dupla
-        partida_id: ID da partida (opcional)
-    
-    Returns:
-        Dicionário com estatísticas de saque da dupla ou None se não encontrada
-    """
+
     dupla = db.query(Dupla).filter(Dupla.dupla_id == dupla_id).first()
     if not dupla:
         return None
@@ -603,13 +593,13 @@ def obtem_estatisticas_saque_dupla(db: Session, dupla_id: int, partida_id: int =
     for ponto in erros_query.all():
         acao_saque = db.query(Acao).filter(
             Acao.ponto_id == ponto.ponto_id,
-            Acao.atleta_id.in_(atletas_ids),
+            Acao.atleta_id == ponto.atleta_erro_id,
             Acao.tipo_acao_id == tipo_saque.tipo_acao_id
         ).first()
         if acao_saque:
             erros += 1
     
-    aproveitamento = (aces / tentativas * 100) if tentativas > 0 else 0.0
+    aproveitamento = ((tentativas - erros) / tentativas * 100) if tentativas > 0 else 0.0
     eficiencia = ((aces - erros) / tentativas * 100) if tentativas > 0 else 0.0
     
     return {
@@ -624,17 +614,7 @@ def obtem_estatisticas_saque_dupla(db: Session, dupla_id: int, partida_id: int =
 
 
 def obtem_estatisticas_defesa_dupla(db: Session, dupla_id: int, partida_id: int = None):
-    """
-    Calcula estatísticas de defesa de uma dupla.
-    
-    Args:
-        db: Sessão do banco de dados
-        dupla_id: ID da dupla
-        partida_id: ID da partida (opcional)
-    
-    Returns:
-        Dicionário com estatísticas de defesa da dupla ou None se não encontrada
-    """
+
     dupla = db.query(Dupla).filter(Dupla.dupla_id == dupla_id).first()
     if not dupla:
         return None
@@ -656,10 +636,10 @@ def obtem_estatisticas_defesa_dupla(db: Session, dupla_id: int, partida_id: int 
             "nome": dupla.nome_dupla,
             "tentativas": 0,
             "erros_que_viraram_ponto": 0,
-            "eficiencia_defensiva": 0.0
+            "defesa_aproveitamento": 0.0
         }
     
-    tipo_defesa = db.query(TipoAcao).filter(TipoAcao.nome_acao == "Recepção/Defesa").first()
+    tipo_defesa = db.query(TipoAcao).filter(TipoAcao.nome_acao == "Defesa").first()
     if not tipo_defesa:
         return None
     
@@ -675,7 +655,7 @@ def obtem_estatisticas_defesa_dupla(db: Session, dupla_id: int, partida_id: int 
             "nome": dupla.nome_dupla,
             "tentativas": 0,
             "erros_que_viraram_ponto": 0,
-            "eficiencia_defensiva": 0.0
+            "defesa_aproveitamento": 0.0
         }
     
     motivo_erro_nao_forcado = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Erro não forçado").first()
@@ -699,29 +679,98 @@ def obtem_estatisticas_defesa_dupla(db: Session, dupla_id: int, partida_id: int 
         if acao_defesa:
             erros += 1
     
-    eficiencia_defensiva = ((tentativas - erros) / tentativas * 100) if tentativas > 0 else 0.0
+    aproveitamento_defesa = ((tentativas - erros) / tentativas * 100) if tentativas > 0 else 0.0
     
     return {
         "dupla_id": dupla.dupla_id,
         "nome": dupla.nome_dupla,
         "tentativas": tentativas,
         "erros_que_viraram_ponto": erros,
-        "eficiencia_defensiva": round(eficiencia_defensiva, 2)
+        "defesa_aproveitamento": round(aproveitamento_defesa, 2)
+    }
+
+
+def obtem_estatisticas_recepcao_dupla(db: Session, dupla_id: int, partida_id: int = None):
+
+    dupla = db.query(Dupla).filter(Dupla.dupla_id == dupla_id).first()
+    if not dupla:
+        return None
+    
+    atletas_ids = [atleta.atleta_id for atleta in dupla.atletas]
+    
+    partidas_dupla_query = db.query(Partida.partida_id).filter(
+        ((Partida.dupla_a_id == dupla_id) | (Partida.dupla_b_id == dupla_id))
+    )
+    
+    if partida_id:
+        partidas_dupla_query = partidas_dupla_query.filter(Partida.partida_id == partida_id)
+    
+    partidas_ids = [p.partida_id for p in partidas_dupla_query.all()]
+    
+    if not partidas_ids:
+        return {
+            "dupla_id": dupla.dupla_id,
+            "nome": dupla.nome_dupla,
+            "tentativas": 0,
+            "erros_que_viraram_ponto": 0,
+            "aproveitamento_recepcao": 0.0
+        }
+    
+    tipo_recepcao = db.query(TipoAcao).filter(TipoAcao.nome_acao == "Recepção").first()
+    if not tipo_recepcao:
+        return None
+    
+    # Contar tentativas de recepção (todas as ações de recepção dos atletas da dupla nas partidas)
+    acoes_query = db.query(Acao).filter(
+        Acao.atleta_id.in_(atletas_ids),
+        Acao.tipo_acao_id == tipo_recepcao.tipo_acao_id
+    )
+    
+    # Filtrar por partidas específicas da dupla
+    if partidas_ids:
+        acoes_query = acoes_query.join(Ponto).filter(Ponto.partida_id.in_(partidas_ids))
+    
+    tentativas = acoes_query.count()
+    
+    if tentativas == 0:
+        return {
+            "dupla_id": dupla.dupla_id,
+            "nome": dupla.nome_dupla,
+            "tentativas": 0,
+            "erros_que_viraram_ponto": 0,
+            "aproveitamento_recepcao": 0.0
+        }
+    
+    # Contar erros de recepção: o MESMO atleta que recebeu cometeu o erro
+    erros = 0
+    for atleta_id in atletas_ids:
+        erros_atleta_query = db.query(Ponto).filter(
+            Ponto.atleta_erro_id == atleta_id,
+            Ponto.partida_id.in_(partidas_ids)
+        )
+        
+        for ponto in erros_atleta_query.all():
+            # Verificar se ESTE MESMO atleta fez a recepção neste ponto
+            acao_recepcao = db.query(Acao).filter(
+                Acao.ponto_id == ponto.ponto_id,
+                Acao.atleta_id == atleta_id,  # MESMO atleta que errou
+                Acao.tipo_acao_id == tipo_recepcao.tipo_acao_id
+            ).first()
+            if acao_recepcao:
+                erros += 1
+    
+    aproveitamento_recepcao = ((tentativas - erros) / tentativas * 100) if tentativas > 0 else 0.0
+    
+    return {
+        "dupla_id": dupla.dupla_id,
+        "nome": dupla.nome_dupla,
+        "tentativas": tentativas,
+        "erros_que_viraram_ponto": erros,
+        "aproveitamento_recepcao": round(aproveitamento_recepcao, 2)
     }
 
 
 def obtem_estatisticas_completas_dupla(db: Session, dupla_id: int, partida_id: int = None):
-    """
-    Retorna estatísticas completas consolidadas de uma dupla.
-    
-    Args:
-        db: Sessão do banco de dados
-        dupla_id: ID da dupla
-        partida_id: ID da partida (opcional)
-    
-    Returns:
-        Dicionário com todas as estatísticas da dupla ou None se não encontrada
-    """
 
     resumo = obtem_estatisticas_dupla(db, dupla_id, partida_id)
     if resumo is None:
@@ -755,7 +804,15 @@ def obtem_estatisticas_completas_dupla(db: Session, dupla_id: int, partida_id: i
         defesa = {
             "tentativas": 0,
             "erros_que_viraram_ponto": 0,
-            "eficiencia_defensiva": 0.0
+            "defesa_aproveitamento": 0.0
+        }
+    
+    recepcao = obtem_estatisticas_recepcao_dupla(db, dupla_id, partida_id)
+    if recepcao is None:
+        recepcao = {
+            "tentativas": 0,
+            "erros_que_viraram_ponto": 0,
+            "aproveitamento_recepcao": 0.0
         }
     
     percentual_vitorias = (resumo["total_vitorias"] / resumo["total_partidas"] * 100) if resumo["total_partidas"] > 0 else 0.0
@@ -764,6 +821,7 @@ def obtem_estatisticas_completas_dupla(db: Session, dupla_id: int, partida_id: i
         "dupla_id": resumo["dupla_id"],
         "nome_dupla": resumo["nome_dupla"],
         "atletas": resumo["atletas"],
+        "atletas_ids": resumo["atletas_ids"],
         
         "total_pontos": resumo["total_pontos"],
         "total_aces": resumo["total_aces"],
@@ -788,23 +846,94 @@ def obtem_estatisticas_completas_dupla(db: Session, dupla_id: int, partida_id: i
         
         "defesa_tentativas": defesa["tentativas"],
         "defesa_erros": defesa["erros_que_viraram_ponto"],
-        "defesa_eficiencia": defesa["eficiencia_defensiva"]
+        "defesa_aproveitamento": defesa["defesa_aproveitamento"],
+        
+        "recepcao_tentativas": recepcao["tentativas"],
+        "recepcao_erros": recepcao["erros_que_viraram_ponto"],
+        "recepcao_aproveitamento": recepcao["aproveitamento_recepcao"]
+    }
+
+
+def obtem_estatisticas_completas_atleta(db: Session, atleta_id: int, partida_id: int = None):
+
+    resumo = obtem_estatisticas_atleta(db, atleta_id, partida_id)
+    if resumo is None:
+        return None
+    
+
+    ataque = obtem_estatisticas_ataque_atleta(db, atleta_id, partida_id)
+    if ataque is None:
+        ataque = {
+            "tentativas": 0,
+            "pontos": 0,
+            "erros": 0,
+            "aproveitamento": 0.0,
+            "eficiencia": 0.0
+        }
+    
+
+    saque = obtem_estatisticas_saque_atleta(db, atleta_id, partida_id)
+    if saque is None:
+        saque = {
+            "tentativas": 0,
+            "aces": 0,
+            "erros": 0,
+            "aproveitamento": 0.0,
+            "eficiencia": 0.0
+        }
+    
+
+    defesa = obtem_estatisticas_defesa_atleta(db, atleta_id, partida_id)
+    if defesa is None:
+        defesa = {
+            "tentativas": 0,
+            "erros_que_viraram_ponto": 0,
+            "aproveitamento_defesa": 0.0
+        }
+    
+    recepcao = obtem_estatisticas_recepcao_atleta(db, atleta_id, partida_id)
+    if recepcao is None:
+        recepcao = {
+            "tentativas": 0,
+            "erros_que_viraram_ponto": 0,
+            "aproveitamento_recepcao": 0.0
+        }
+    
+    
+    return {
+        "atleta_id": resumo["atleta_id"],
+        "nome_atleta": resumo["nome_atleta"],
+        
+        "total_pontos": resumo["total_pontos"],
+        "total_aces": resumo["total_aces"],
+        "total_pontos_ataque": resumo["total_pontos_ataque"],
+        "total_erros": resumo["total_erros"],
+        "total_partidas": resumo["total_partidas"],
+        
+        "ataque_tentativas": ataque["tentativas"],
+        "ataque_pontos": ataque["pontos"],
+        "ataque_erros": ataque["erros"],
+        "ataque_aproveitamento": ataque["aproveitamento"],
+        "ataque_eficiencia": ataque["eficiencia"],
+        
+        "saque_tentativas": saque["tentativas"],
+        "saque_aces": saque["aces"],
+        "saque_erros": saque["erros"],
+        "saque_aproveitamento": saque["aproveitamento"],
+        "saque_eficiencia": saque["eficiencia"],
+        
+        "defesa_tentativas": defesa["tentativas"],
+        "defesa_erros": defesa["erros_que_viraram_ponto"],
+        "defesa_aproveitamento": defesa["aproveitamento_defesa"],
+        
+        "recepcao_tentativas": recepcao["tentativas"],
+        "recepcao_erros": recepcao["erros_que_viraram_ponto"],
+        "recepcao_aproveitamento": recepcao["aproveitamento_recepcao"]
     }
 
 
 def obtem_mapa_calor_atleta(db: Session, atleta_id: int, tipo_acao_id: int, partida_id: int = None):
-    """
-    Gera mapa de calor com estatísticas na quadra para um atleta.
-    
-    Args:
-        db: Sessão do banco de dados
-        atleta_id: ID do atleta
-        tipo_acao_id: ID do tipo de ação
-        partida_id: ID da partida (opcional)
-    
-    Returns:
-        Dicionário com estatísticas por fluxo origem→destino ou None se não encontrado
-    """
+
     atleta = db.query(Atleta).filter(Atleta.atleta_id == atleta_id).first()
     if not atleta:
         return None
@@ -812,6 +941,21 @@ def obtem_mapa_calor_atleta(db: Session, atleta_id: int, tipo_acao_id: int, part
     tipo_acao_obj = db.query(TipoAcao).filter(TipoAcao.tipo_acao_id == tipo_acao_id).first()
     if not tipo_acao_obj:
         return None
+    
+    # Determinar o lado da quadra (A ou B)
+    lado_quadra = "A"  # Padrão quando não há partida
+    
+    if partida_id:
+        partida = db.query(Partida).filter(Partida.partida_id == partida_id).first()
+        if partida:
+            # Verificar se o atleta pertence à dupla A ou B
+            dupla_a = db.query(Dupla).filter(Dupla.dupla_id == partida.dupla_a_id).first()
+            dupla_b = db.query(Dupla).filter(Dupla.dupla_id == partida.dupla_b_id).first()
+            
+            if dupla_a and atleta in dupla_a.atletas:
+                lado_quadra = "A"
+            elif dupla_b and atleta in dupla_b.atletas:
+                lado_quadra = "B"
     
     acoes_query = db.query(Acao).filter(
         Acao.atleta_id == atleta_id,
@@ -829,6 +973,12 @@ def obtem_mapa_calor_atleta(db: Session, atleta_id: int, tipo_acao_id: int, part
     motivo_erro_nao_forcado = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Erro não forçado").first()
     motivo_erro_forcado = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Erro forçado").first()
     
+    acoes_mudam_lado = [1, 5, 6]  # IDs: Saque, Ataque, Bloqueio
+    muda_lado = tipo_acao_obj.tipo_acao_id in acoes_mudam_lado
+    
+    # Determinar lado oposto
+    lado_oposto = "B" if lado_quadra == "A" else "A"
+    
     fluxos_stats = {}
     
     for acao in acoes:
@@ -838,9 +988,18 @@ def obtem_mapa_calor_atleta(db: Session, atleta_id: int, tipo_acao_id: int, part
         fluxo_key = (posicao_origem, posicao_destino)
         
         if fluxo_key not in fluxos_stats:
+            if muda_lado:
+                lado_origem_fluxo = lado_quadra
+                lado_destino_fluxo = lado_oposto
+            else:
+                lado_origem_fluxo = lado_quadra
+                lado_destino_fluxo = lado_quadra
+            
             fluxos_stats[fluxo_key] = {
                 "posicao_origem": posicao_origem,
                 "posicao_destino": posicao_destino,
+                "lado_origem": lado_origem_fluxo,
+                "lado_destino": lado_destino_fluxo,
                 "total_acoes": 0,
                 "pontos": 0,
                 "erros": 0
@@ -851,14 +1010,12 @@ def obtem_mapa_calor_atleta(db: Session, atleta_id: int, tipo_acao_id: int, part
         if acao.ponto_id:
             ponto = db.query(Ponto).filter(Ponto.ponto_id == acao.ponto_id).first()
             if ponto:
-                # Ponto marcado
                 if ponto.atleta_ponto_id == atleta_id:
                     if tipo_acao_obj.nome_acao == "Saque" and ponto.motivo_ponto_id == (motivo_ace.motivo_ponto_id if motivo_ace else -1):
                         fluxos_stats[fluxo_key]["pontos"] += 1
                     elif tipo_acao_obj.nome_acao == "Ataque" and ponto.motivo_ponto_id == (motivo_ataque.motivo_ponto_id if motivo_ataque else -1):
                         fluxos_stats[fluxo_key]["pontos"] += 1
-                
-                # Erro cometido
+
                 if ponto.atleta_erro_id == atleta_id:
                     if (ponto.motivo_ponto_id == (motivo_erro_nao_forcado.motivo_ponto_id if motivo_erro_nao_forcado else -1) or
                         ponto.motivo_ponto_id == (motivo_erro_forcado.motivo_ponto_id if motivo_erro_forcado else -1)):
@@ -876,6 +1033,8 @@ def obtem_mapa_calor_atleta(db: Session, atleta_id: int, tipo_acao_id: int, part
         fluxos_lista.append({
             "posicao_origem": fluxo_stats["posicao_origem"],
             "posicao_destino": fluxo_stats["posicao_destino"],
+            "lado_origem": fluxo_stats["lado_origem"],
+            "lado_destino": fluxo_stats["lado_destino"],
             "total_acoes": total,
             "pontos": pontos,
             "erros": erros,
@@ -891,6 +1050,148 @@ def obtem_mapa_calor_atleta(db: Session, atleta_id: int, tipo_acao_id: int, part
         "nome": atleta.nome_atleta,
         "tipo_acao_id": tipo_acao_obj.tipo_acao_id,
         "tipo_acao_nome": tipo_acao_obj.nome_acao,
+        "lado_quadra": lado_quadra,
         "fluxos": fluxos_lista,
         "total_acoes": total_acoes_geral
+    }
+
+
+def obtem_mapa_calor_posicoes_atleta(db: Session, atleta_id: int, tipo_acao_id: int, partida_id: int = None):
+
+    atleta = db.query(Atleta).filter(Atleta.atleta_id == atleta_id).first()
+    if not atleta:
+        return None
+    
+    tipo_acao_obj = db.query(TipoAcao).filter(TipoAcao.tipo_acao_id == tipo_acao_id).first()
+    if not tipo_acao_obj:
+        return None
+    
+    lado_quadra = "A"
+    
+    if partida_id:
+        partida = db.query(Partida).filter(Partida.partida_id == partida_id).first()
+        if partida:
+            dupla_a = db.query(Dupla).filter(Dupla.dupla_id == partida.dupla_a_id).first()
+            dupla_b = db.query(Dupla).filter(Dupla.dupla_id == partida.dupla_b_id).first()
+            
+            if dupla_a and atleta in dupla_a.atletas:
+                lado_quadra = "A"
+            elif dupla_b and atleta in dupla_b.atletas:
+                lado_quadra = "B"
+    
+
+    acoes_mudam_lado = [1, 5, 6]  # IDs: Saque, Ataque, Bloqueio
+    muda_lado = tipo_acao_obj.tipo_acao_id in acoes_mudam_lado
+    lado_destino = "B" if lado_quadra == "A" else "A" if muda_lado else lado_quadra
+    
+    acoes_query = db.query(Acao).filter(
+        Acao.atleta_id == atleta_id,
+        Acao.tipo_acao_id == tipo_acao_obj.tipo_acao_id
+    )
+    
+    if muda_lado:
+        acoes_query = acoes_query.filter(Acao.posicao_quadra_destino.isnot(None))
+    else:
+        acoes_query = acoes_query.filter(
+            (Acao.posicao_quadra_origem.isnot(None)) | (Acao.posicao_quadra_destino.isnot(None))
+        )
+    
+    if partida_id:
+        acoes_query = acoes_query.join(Ponto).filter(Ponto.partida_id == partida_id)
+    
+    acoes = acoes_query.all()
+    
+    motivo_ace = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Ponto de ace").first()
+    motivo_ataque = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Ponto de ataque").first()
+    motivo_erro_nao_forcado = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Erro não forçado").first()
+    motivo_erro_forcado = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Erro forçado").first()
+    
+    posicoes_stats = {}
+    
+    for acao in acoes:
+        if muda_lado:
+            posicao = acao.posicao_quadra_destino
+        else:
+            posicao = acao.posicao_quadra_origem if acao.posicao_quadra_origem else acao.posicao_quadra_destino
+        
+        if posicao is None:
+            continue  # Pular ações sem posição definida
+        
+        if posicao not in posicoes_stats:
+            posicoes_stats[posicao] = {
+                "posicao": posicao,
+                "total_acoes": 0,
+                "pontos": 0,
+                "erros": 0,
+                "acoes_neutras": 0
+            }
+        
+        posicoes_stats[posicao]["total_acoes"] += 1
+        
+        if acao.ponto_id:
+            ponto = db.query(Ponto).filter(Ponto.ponto_id == acao.ponto_id).first()
+            if ponto:
+                if ponto.atleta_ponto_id == atleta_id:
+                    if tipo_acao_obj.nome_acao == "Saque" and ponto.motivo_ponto_id == (motivo_ace.motivo_ponto_id if motivo_ace else -1):
+                        posicoes_stats[posicao]["pontos"] += 1
+                    elif tipo_acao_obj.nome_acao == "Ataque" and ponto.motivo_ponto_id == (motivo_ataque.motivo_ponto_id if motivo_ataque else -1):
+                        posicoes_stats[posicao]["pontos"] += 1
+                    else:
+                        posicoes_stats[posicao]["acoes_neutras"] += 1
+                elif ponto.atleta_erro_id == atleta_id:
+                    if (ponto.motivo_ponto_id == (motivo_erro_nao_forcado.motivo_ponto_id if motivo_erro_nao_forcado else -1) or
+                        ponto.motivo_ponto_id == (motivo_erro_forcado.motivo_ponto_id if motivo_erro_forcado else -1)):
+                        posicoes_stats[posicao]["erros"] += 1
+                    else:
+                        posicoes_stats[posicao]["acoes_neutras"] += 1
+                else:
+                    posicoes_stats[posicao]["acoes_neutras"] += 1
+        else:
+            posicoes_stats[posicao]["acoes_neutras"] += 1
+    
+    posicoes_lista = []
+    total_acoes_geral = 0
+    total_pontos_geral = 0
+    total_erros_geral = 0
+    
+    for pos_stats in posicoes_stats.values():
+        total = pos_stats["total_acoes"]
+        pontos = pos_stats["pontos"]
+        erros = pos_stats["erros"]
+        
+        eficiencia = ((pontos - erros) / total * 100) if total > 0 else 0.0
+        taxa_ponto = (pontos / total * 100) if total > 0 else 0.0
+        taxa_erro = (erros / total * 100) if total > 0 else 0.0
+        
+        posicoes_lista.append({
+            "posicao": pos_stats["posicao"],
+            "total_acoes": total,
+            "pontos": pontos,
+            "erros": erros,
+            "acoes_neutras": pos_stats["acoes_neutras"],
+            "eficiencia": round(eficiencia, 2),
+            "taxa_ponto": round(taxa_ponto, 2),
+            "taxa_erro": round(taxa_erro, 2)
+        })
+        
+        total_acoes_geral += total
+        total_pontos_geral += pontos
+        total_erros_geral += erros
+    
+    posicoes_lista.sort(key=lambda x: x["posicao"])
+    
+    eficiencia_geral = ((total_pontos_geral - total_erros_geral) / total_acoes_geral * 100) if total_acoes_geral > 0 else 0.0
+    
+    return {
+        "atleta_id": atleta.atleta_id,
+        "nome": atleta.nome_atleta,
+        "tipo_acao_id": tipo_acao_obj.tipo_acao_id,
+        "tipo_acao_nome": tipo_acao_obj.nome_acao,
+        "lado_quadra": lado_quadra,
+        "lado_destino": lado_destino,
+        "posicoes": posicoes_lista,
+        "total_acoes": total_acoes_geral,
+        "total_pontos": total_pontos_geral,
+        "total_erros": total_erros_geral,
+        "eficiencia_geral": round(eficiencia_geral, 2)
     }
