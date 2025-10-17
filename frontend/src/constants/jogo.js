@@ -2,11 +2,12 @@
 
 export const TIPOS_ACOES = [
   { id: 1, nome: "Saque" },
-  { id: 2, nome: "Recepção/Defesa" },
+  { id: 2, nome: "Defesa" },
   { id: 3, nome: "Levantamento" },
   { id: 4, nome: "1º Toque de Correção" },
   { id: 5, nome: "Ataque" },
   { id: 6, nome: "Bloqueio" },
+  { id: 7, nome: "Recepção" },
 ];
 
 // Helper para buscar o ID pelo nome, como: TIPO_ACAO_ID.SAQUE, TIPO_ACAO_ID.RECEPCAO_DEFESA, etc.
