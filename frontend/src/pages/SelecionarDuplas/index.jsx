@@ -222,12 +222,12 @@ function SelecionarDuplas() {
           </div>
         </div>
 
-        <div className="flex flex-col bg-[#2a2a2a] p-4 rounded-lg min-h-[250px] md:min-h-0">
+        <div className="flex flex-col bg-[#2a2a2a] p-4 rounded-lg">
           <h3 className="text-2xl font-semibold text-center mb-4">Jogadores Disponíveis</h3>
           {isLoading ? (
-            <div className="flex-grow flex items-center justify-center text-gray-400">Carregando...</div>
+            <div className="flex items-center justify-center text-gray-400 h-[300px]">Carregando...</div>
           ) : (
-            <div className="space-y-2 overflow-y-auto pr-2 flex-grow">
+            <div className="space-y-2 overflow-y-auto pr-2 max-h-[300px] md:max-h-[400px]">
               {jogadoresDisponiveis.map(player => (
                 <div
                   key={player.atleta_id}
