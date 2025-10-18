@@ -14,7 +14,7 @@ function Home() {
             + NOVA PARTIDA
           </Link>
 
-          <Link to="/matches"
+          <Link to="/dashboard"
             className="w-full max-w-sm text-center bg-gray-700 hover:bg-gray-600 font-bold uppercase text-white transition-all duration-200 text-2xl px-12 py-6 rounded-xl shadow-lg hover:-translate-y-0.5"
           >
             Análise de Partidas
