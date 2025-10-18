@@ -37,9 +37,13 @@ export const useRallyLogica = (partida, duplas) => {
       const timeUltimoJogador = getTimeAtleta(lastAction.atleta_id);
 
       if (timeAtletaAtual !== timeUltimoJogador) {
-        tipoAcaoId = TIPO_ACAO_ID.RECEPCAO_DEFESA;
+        if (lastAction.tipo_acao_id === TIPO_ACAO_ID.SAQUE) {
+          tipoAcaoId = TIPO_ACAO_ID.RECEPCAO;
+        } else {
+          tipoAcaoId = TIPO_ACAO_ID.DEFESA;
+        }
       } else {
-        if (lastAction.tipo_acao_id === TIPO_ACAO_ID.RECEPCAO_DEFESA) {
+        if (lastAction.tipo_acao_id === TIPO_ACAO_ID.RECEPCAO || lastAction.tipo_acao_id === TIPO_ACAO_ID.DEFESA) {
           tipoAcaoId = TIPO_ACAO_ID.LEVANTAMENTO;
         } else {
           tipoAcaoId = TIPO_ACAO_ID.ATAQUE;
