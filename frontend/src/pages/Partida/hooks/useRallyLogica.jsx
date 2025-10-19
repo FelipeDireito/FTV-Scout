@@ -167,7 +167,7 @@ export const useRallyLogica = (partida, duplas) => {
 
       setAcoesRally(prev => {
         const novasAcoes = [...prev, acaoSalva];
-
+        
         setAtletaSelecionado(null);
 
         return novasAcoes;
