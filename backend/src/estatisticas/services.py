@@ -720,13 +720,11 @@ def obtem_estatisticas_recepcao_dupla(db: Session, dupla_id: int, partida_id: in
     if not tipo_recepcao:
         return None
     
-    # Contar tentativas de recepção (todas as ações de recepção dos atletas da dupla nas partidas)
     acoes_query = db.query(Acao).filter(
         Acao.atleta_id.in_(atletas_ids),
         Acao.tipo_acao_id == tipo_recepcao.tipo_acao_id
     )
     
-    # Filtrar por partidas específicas da dupla
     if partidas_ids:
         acoes_query = acoes_query.join(Ponto).filter(Ponto.partida_id.in_(partidas_ids))
     
@@ -740,8 +738,7 @@ def obtem_estatisticas_recepcao_dupla(db: Session, dupla_id: int, partida_id: in
             "erros_que_viraram_ponto": 0,
             "aproveitamento_recepcao": 0.0
         }
-    
-    # Contar erros de recepção: o MESMO atleta que recebeu cometeu o erro
+
     erros = 0
     for atleta_id in atletas_ids:
         erros_atleta_query = db.query(Ponto).filter(
@@ -750,10 +747,9 @@ def obtem_estatisticas_recepcao_dupla(db: Session, dupla_id: int, partida_id: in
         )
         
         for ponto in erros_atleta_query.all():
-            # Verificar se ESTE MESMO atleta fez a recepção neste ponto
             acao_recepcao = db.query(Acao).filter(
                 Acao.ponto_id == ponto.ponto_id,
-                Acao.atleta_id == atleta_id,  # MESMO atleta que errou
+                Acao.atleta_id == atleta_id, 
                 Acao.tipo_acao_id == tipo_recepcao.tipo_acao_id
             ).first()
             if acao_recepcao:
@@ -768,6 +764,52 @@ def obtem_estatisticas_recepcao_dupla(db: Session, dupla_id: int, partida_id: in
         "erros_que_viraram_ponto": erros,
         "aproveitamento_recepcao": round(aproveitamento_recepcao, 2)
     }
+
+
+def obtem_estatisticas_bloqueio_atleta(db: Session, atleta_id: int, partida_id: int = None):
+
+    atleta = db.query(Atleta).filter(Atleta.atleta_id == atleta_id).first()
+    if not atleta:
+        return None
+    
+    motivo_bloqueio = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Ponto de bloqueio").first()
+    if not motivo_bloqueio:
+        return {"pontos": 0}
+    
+    pontos_query = db.query(Ponto).filter(
+        Ponto.atleta_ponto_id == atleta_id,
+        Ponto.motivo_ponto_id == motivo_bloqueio.motivo_ponto_id
+    )
+    if partida_id:
+        pontos_query = pontos_query.filter(Ponto.partida_id == partida_id)
+    
+    pontos = pontos_query.count()
+    
+    return {"pontos": pontos}
+
+
+def obtem_estatisticas_bloqueio_dupla(db: Session, dupla_id: int, partida_id: int = None):
+
+    dupla = db.query(Dupla).filter(Dupla.dupla_id == dupla_id).first()
+    if not dupla:
+        return None
+    
+    atletas_ids = [atleta.atleta_id for atleta in dupla.atletas]
+    
+    motivo_bloqueio = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Ponto de bloqueio").first()
+    if not motivo_bloqueio:
+        return {"pontos": 0}
+    
+    pontos_query = db.query(Ponto).filter(
+        Ponto.atleta_ponto_id.in_(atletas_ids),
+        Ponto.motivo_ponto_id == motivo_bloqueio.motivo_ponto_id
+    )
+    if partida_id:
+        pontos_query = pontos_query.filter(Ponto.partida_id == partida_id)
+    
+    pontos = pontos_query.count()
+    
+    return {"pontos": pontos}
 
 
 def obtem_estatisticas_completas_dupla(db: Session, dupla_id: int, partida_id: int = None):
@@ -815,6 +857,10 @@ def obtem_estatisticas_completas_dupla(db: Session, dupla_id: int, partida_id: i
             "aproveitamento_recepcao": 0.0
         }
     
+    bloqueio = obtem_estatisticas_bloqueio_dupla(db, dupla_id, partida_id)
+    if bloqueio is None:
+        bloqueio = {"pontos": 0}
+    
     percentual_vitorias = (resumo["total_vitorias"] / resumo["total_partidas"] * 100) if resumo["total_partidas"] > 0 else 0.0
     
     return {
@@ -850,7 +896,9 @@ def obtem_estatisticas_completas_dupla(db: Session, dupla_id: int, partida_id: i
         
         "recepcao_tentativas": recepcao["tentativas"],
         "recepcao_erros": recepcao["erros_que_viraram_ponto"],
-        "recepcao_aproveitamento": recepcao["aproveitamento_recepcao"]
+        "recepcao_aproveitamento": recepcao["aproveitamento_recepcao"],
+        
+        "bloqueio_pontos": bloqueio["pontos"]
     }
 
 
@@ -899,6 +947,10 @@ def obtem_estatisticas_completas_atleta(db: Session, atleta_id: int, partida_id:
             "aproveitamento_recepcao": 0.0
         }
     
+    bloqueio = obtem_estatisticas_bloqueio_atleta(db, atleta_id, partida_id)
+    if bloqueio is None:
+        bloqueio = {"pontos": 0}
+    
     
     return {
         "atleta_id": resumo["atleta_id"],
@@ -928,7 +980,9 @@ def obtem_estatisticas_completas_atleta(db: Session, atleta_id: int, partida_id:
         
         "recepcao_tentativas": recepcao["tentativas"],
         "recepcao_erros": recepcao["erros_que_viraram_ponto"],
-        "recepcao_aproveitamento": recepcao["aproveitamento_recepcao"]
+        "recepcao_aproveitamento": recepcao["aproveitamento_recepcao"],
+        
+        "bloqueio_pontos": bloqueio["pontos"]
     }
 
 

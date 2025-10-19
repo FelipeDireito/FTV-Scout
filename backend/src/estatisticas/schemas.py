@@ -126,6 +126,8 @@ class DuplaEstatisticasCompletas(BaseModel):
     recepcao_erros: int
     recepcao_aproveitamento: float
 
+    bloqueio_pontos: int
+
     class Config:
         from_attributes = True
 
@@ -159,6 +161,8 @@ class AtletaEstatisticasCompletas(BaseModel):
     recepcao_tentativas: int
     recepcao_erros: int
     recepcao_aproveitamento: float
+
+    bloqueio_pontos: int
 
     class Config:
         from_attributes = True
