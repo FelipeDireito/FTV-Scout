@@ -102,7 +102,7 @@ function Partida() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white font-sans">
-      {isModalPontoOpen && <ModalPonto timeVencedor={timeVencedorForModal} onClose={() => setIsPontoModalOpen(false)} onFinalizar={(motivoId) => handleFinalizarPonto(motivoId, setLogMessage, score, setScore)} />}
+      {isModalPontoOpen && <ModalPonto timeVencedor={timeVencedorForModal} onClose={() => setIsPontoModalOpen(false)} onFinalizar={(motivoId) => handleFinalizarPonto(motivoId, setLogMessage, score, setScore)} acoesRally={acoesRally} duplas={duplas} />}
       {isModalFinalizarOpen && <ModalFinalizarPartida score={score} pontos={pontosPartida} partida={partida} onClose={fecharModalFinalizacao} onFinalizar={handleFinalizarPartida} />}
       {isModalVoltarPontoOpen && <ModalVoltarPonto onClose={fecharModalVoltarPonto} onFinalizar={() => handleVoltarPonto(setLogMessage, onRallyReset)} />}
       {acaoParaEditar && <ModalEditarAcao
