@@ -1,4 +1,6 @@
-const DisplayQuadra = ({ 
+import { memo, useCallback } from 'react';
+
+const DisplayQuadra = memo(({ 
   activeZone, 
   onClickZona, 
   disabled = false, 
@@ -37,6 +39,6 @@ const DisplayQuadra = ({
       </div>
     </div>
   );
-};
+});
 
 export default DisplayQuadra;

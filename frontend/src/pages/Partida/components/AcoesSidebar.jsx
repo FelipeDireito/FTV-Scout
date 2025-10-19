@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import { TECNICAS } from '../../../constants/jogo';
 
-const AcoesSidebar = ({ 
+const AcoesSidebar = memo(({ 
   onSelectTecnica, 
   onTogglePosition, 
   position, 
@@ -35,6 +36,6 @@ const AcoesSidebar = ({
       </div>
     </div>
   );
-};
+});
 
 export default AcoesSidebar;

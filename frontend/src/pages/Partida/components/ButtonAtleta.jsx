@@ -1,4 +1,6 @@
-const ButtonAtleta = ({ 
+import { memo } from 'react';
+
+const ButtonAtleta = memo(({ 
   atleta, 
   onClick, 
   isSelecionado, 
@@ -38,6 +40,6 @@ const ButtonAtleta = ({
       </div>
     )}
   </button>
-);
+));
 
 export default ButtonAtleta;

@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import { TECNICAS, MOTIVOS_PONTO } from '../../../constants/jogo'
 
-const RallyLog = ({ actions, getAtletaById, isRallyActive, onActionClick, getTimeAtleta, motivoPonto, onMotivoPontoClick }) => {
+const RallyLog = memo(({ actions, getAtletaById, isRallyActive, onActionClick, getTimeAtleta, motivoPonto, onMotivoPontoClick }) => {
   const getTecnicaNome = (id) => TECNICAS.find(t => t.id === id)?.nome || 'N/A';
   const getMotivoPontoDescricao = (id) => MOTIVOS_PONTO.find(m => m.id === id)?.descricao || 'N/A';
   const scrollContainerRef = useRef(null);
@@ -69,6 +69,6 @@ const RallyLog = ({ actions, getAtletaById, isRallyActive, onActionClick, getTim
       </div>
     </div>
   );
-};
+});
 
 export default RallyLog;

@@ -68,9 +68,9 @@ function Partida() {
     return null;
   }, [duplas]);
 
-  const toggleSidebarPosition = () => {
+  const toggleSidebarPosition = useCallback(() => {
     setSidebarPosition(prev => (prev === 'right' ? 'left' : 'right'));
-  };
+  }, []);
 
   useEffect(() => {
     const rallyEmAndamento = acoesRally.length > 0;
