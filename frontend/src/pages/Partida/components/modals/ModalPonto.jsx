@@ -12,12 +12,12 @@ const ModalPonto = ({ timeVencedor, onClose, onFinalizar }) => {
 
         <div className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-4">
           <p className="text-center text-gray-300">Selecione o motivo do ponto:</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             {MOTIVOS_PONTO.map(motivo => (
               <button
                 key={motivo.id}
                 onClick={() => onFinalizar(motivo.id)}
-                className="btn-primary text-base py-2 sm:py-3"
+                className="py-3 px-4 rounded-lg text-base font-medium transition-all bg-gray-700 text-gray-300 hover:bg-gray-600"
               >
                 {motivo.descricao}
               </button>
