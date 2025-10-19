@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { TECNICAS, MOTIVOS_PONTO } from '../../../constants/jogo'
 
-const RallyLog = ({ actions, getAtletaById, isRallyActive, onActionClick, getTimeAtleta, motivoPonto }) => {
+const RallyLog = ({ actions, getAtletaById, isRallyActive, onActionClick, getTimeAtleta, motivoPonto, onMotivoPontoClick }) => {
   const getTecnicaNome = (id) => TECNICAS.find(t => t.id === id)?.nome || 'N/A';
   const getMotivoPontoDescricao = (id) => MOTIVOS_PONTO.find(m => m.id === id)?.descricao || 'N/A';
   const scrollContainerRef = useRef(null);
@@ -48,8 +48,20 @@ const RallyLog = ({ actions, getAtletaById, isRallyActive, onActionClick, getTim
               );
             })}
             {!isRallyActive && motivoPonto && (
-              <div className="bg-yellow-900/30 border border-yellow-600/50 p-2 rounded-md text-sm mt-2">
-                <span className="font-bold text-yellow-500">{getMotivoPontoDescricao(motivoPonto)}</span>
+              <div 
+                onClick={() => onMotivoPontoClick && onMotivoPontoClick()}
+                className={`bg-yellow-900/30 border border-yellow-600/50 p-2 rounded-md text-sm mt-2 transition-all ${onMotivoPontoClick ? 'cursor-pointer hover:bg-yellow-900/60 hover:border-yellow-500 hover:shadow-lg' : ''}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-yellow-500">
+                    {getMotivoPontoDescricao(motivoPonto)}
+                  </span>
+                  {onMotivoPontoClick && (
+                    <span className="text-yellow-400 text-xs ml-2 opacity-70 hover:opacity-100">
+                      [Editar]
+                    </span>
+                  )}
+                </div>
               </div>
             )}
           </>

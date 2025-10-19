@@ -11,6 +11,7 @@ export const useControlePartida = (partida, duplas, initialScore = { a: 0, b: 0 
   const [isModalFinalizarOpen, setIsModalFinalizarOpen] = useState(false);
   const [isModalVoltarPontoOpen, setIsModalVoltarPontoOpen] = useState(false);
   const [acaoParaEditar, setAcaoParaEditar] = useState(null);
+  const [pontoParaEditar, setPontoParaEditar] = useState(null);
 
   useEffect(() => {
     const restoreScore = async () => {
@@ -122,6 +123,43 @@ export const useControlePartida = (partida, duplas, initialScore = { a: 0, b: 0 
     }
   };
 
+  const handleAbrirModalEdicaoPonto = async (motivoPontoId) => {
+    if (!motivoPontoId) {
+      setPontoParaEditar(null);
+      return;
+    }
+    
+    try {
+      const response = await api.get(`/pontuacao/${partida.partida_id}`);
+      const pontos = response.data;
+      
+      if (pontos && pontos.length > 0) {
+        const ultimoPonto = pontos[pontos.length - 1];
+        setPontoParaEditar({ ...ultimoPonto, motivo_ponto_id: motivoPontoId });
+      }
+    } catch (error) {
+      console.error("Erro ao buscar último ponto:", error);
+      alert("Falha ao carregar o ponto para edição.");
+    }
+  };
+
+  const handleSalvarEdicaoPonto = async (pontoId, motivoPontoId, setLogMessage, onMotivoPontoAtualizado) => {
+    try {
+      setLogMessage("Salvando alterações no motivo do ponto...");
+      const response = await api.patch(`/pontuacao/ponto/${pontoId}`, { motivo_ponto_id: motivoPontoId });
+      const pontoAtualizado = response.data;
+      console.log("Ponto atualizado:", pontoAtualizado);
+      onMotivoPontoAtualizado(motivoPontoId);
+      setLogMessage("Motivo do ponto atualizado com sucesso.");
+    } catch (error) {
+      console.error("Erro ao atualizar o motivo do ponto:", error);
+      alert("Falha ao atualizar o motivo do ponto.");
+      setLogMessage("Erro ao salvar. Tente novamente.");
+    } finally {
+      setPontoParaEditar(null);
+    }
+  };
+
   return {
     score,
     setScore,
@@ -129,6 +167,7 @@ export const useControlePartida = (partida, duplas, initialScore = { a: 0, b: 0 
     isModalFinalizarOpen,
     isModalVoltarPontoOpen,
     acaoParaEditar,
+    pontoParaEditar,
     abrirModalFinalizacao,
     fecharModalFinalizacao,
     handleFinalizarPartida,
@@ -137,5 +176,7 @@ export const useControlePartida = (partida, duplas, initialScore = { a: 0, b: 0 
     handleVoltarPonto,
     handleAbrirModalEdicao,
     handleSalvarEdicaoAcao,
+    handleAbrirModalEdicaoPonto,
+    handleSalvarEdicaoPonto,
   };
 };

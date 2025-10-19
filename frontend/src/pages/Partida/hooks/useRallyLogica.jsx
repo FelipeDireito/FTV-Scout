@@ -7,6 +7,7 @@ export const useRallyLogica = (partida, duplas) => {
   const [rallyId, setRallyId] = useState(uuidv4());
   const [acoesRally, setAcoesRally] = useState([]);
   const [ultimoRally, setUltimoRally] = useState([]);
+  const [motivoPontoUltimoRally, setMotivoPontoUltimoRally] = useState(null);
   const [atletaSelecionado, setAtletaSelecionado] = useState(null);
   const [activeZone, setActiveZone] = useState(null);
   const [pontoPendente, setPontoPendente] = useState(null);
@@ -229,6 +230,7 @@ export const useRallyLogica = (partida, duplas) => {
       setLogMessage(`Ponto para a Dupla ${timeVencedor}! Novo rally.`);
 
       setUltimoRally(rallyActionsAtualizado);
+      setMotivoPontoUltimoRally(motivoPontoId);
       setAcoesRally([]);
       setRallyId(uuidv4());
     } catch (error) {
@@ -253,6 +255,7 @@ export const useRallyLogica = (partida, duplas) => {
 
   const onRallyReset = () => {
     setUltimoRally([]);
+    setMotivoPontoUltimoRally(null);
     setAcoesRally([]);
     setRallyId(uuidv4());
   };
@@ -263,10 +266,15 @@ export const useRallyLogica = (partida, duplas) => {
     );
   };
 
+  const onMotivoPontoAtualizado = (novoMotivoPontoId) => {
+    setMotivoPontoUltimoRally(novoMotivoPontoId);
+  };
+
   return {
     rallyId,
     acoesRally,
     ultimoRally,
+    motivoPontoUltimoRally,
     atletaSelecionado,
     setAtletaSelecionado,
     activeZone,
@@ -282,5 +290,6 @@ export const useRallyLogica = (partida, duplas) => {
     handleSelecionarZona,
     onRallyReset,
     onAcaoAtualizada,
+    onMotivoPontoAtualizado,
   };
 };

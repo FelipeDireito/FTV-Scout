@@ -13,6 +13,7 @@ import AcoesSidebar from './components/AcoesSidebar';
 import ModalPonto from './components/modals/ModalPonto';
 import ModalVoltarPonto from './components/modals/ModalVoltarPonto';
 import ModalEditarAcao from './components/modals/ModalEditarAcao';
+import ModalEditarPonto from './components/modals/ModalEditarPonto';
 import ModalFinalizarPartida from './components/modals/ModalFinalizarPartida';
 
 
@@ -32,17 +33,18 @@ function Partida() {
   const { texto, startEscutando, stopEscutando, isEscutando, setTexto } = useFalaParaTexto({ continuous: true });
 
   const {
-    score, setScore, pontosPartida, isModalFinalizarOpen, isModalVoltarPontoOpen, acaoParaEditar,
+    score, setScore, pontosPartida, isModalFinalizarOpen, isModalVoltarPontoOpen, acaoParaEditar, pontoParaEditar,
     abrirModalFinalizacao, fecharModalFinalizacao, handleFinalizarPartida,
     abrirModalVoltarPonto, fecharModalVoltarPonto, handleVoltarPonto,
-    handleAbrirModalEdicao, handleSalvarEdicaoAcao
+    handleAbrirModalEdicao, handleSalvarEdicaoAcao,
+    handleAbrirModalEdicaoPonto, handleSalvarEdicaoPonto
   } = useControlePartida(partida, duplas);
 
   const {
-    acoesRally, ultimoRally, atletaSelecionado, setAtletaSelecionado,
+    acoesRally, ultimoRally, motivoPontoUltimoRally, atletaSelecionado, setAtletaSelecionado,
     activeZone, pontoPendente, isModalPontoOpen, setIsPontoModalOpen, timeVencedorForModal,
     handleSelecionarTecnica, handleSaque, openPointModal, handleFinalizarPonto,
-    handleSelecionarZona, onRallyReset, onAcaoAtualizada
+    handleSelecionarZona, onRallyReset, onAcaoAtualizada, onMotivoPontoAtualizado
   } = useRallyLogica(partida, duplas);
 
   const getTimeAtleta = useCallback((atletaId) => {
@@ -108,7 +110,15 @@ function Partida() {
         onClose={() => handleAbrirModalEdicao(null)}
         onSave={(id, data) => handleSalvarEdicaoAcao(id, data, setLogMessage, onAcaoAtualizada)}
         getAtletaById={getAtletaById}
-        atletas={[duplas.a1, duplas.a2, duplas.b1, duplas.b2]}
+        atletas={(() => {
+          const timeAcao = getTimeAtleta(acaoParaEditar.atleta_id);
+          return timeAcao === 'A' ? [duplas.a1, duplas.a2] : [duplas.b1, duplas.b2];
+        })()}
+      />}
+      {pontoParaEditar && <ModalEditarPonto
+        ponto={pontoParaEditar}
+        onClose={() => handleAbrirModalEdicaoPonto(null)}
+        onSave={(pontoId, motivoPontoId) => handleSalvarEdicaoPonto(pontoId, motivoPontoId, setLogMessage, onMotivoPontoAtualizado)}
       />}
 
       <header className="grid grid-cols-3 items-center p-2 md:p-4 bg-black/30 shadow-lg relative z-20">
@@ -198,7 +208,10 @@ function Partida() {
                 actions={acoesRally.length > 0 ? acoesRally : ultimoRally}
                 isRallyActive={acoesRally.length > 0}
                 getAtletaById={getAtletaById}
+                getTimeAtleta={getTimeAtleta}
+                motivoPonto={acoesRally.length > 0 ? null : motivoPontoUltimoRally}
                 onActionClick={handleAbrirModalEdicao}
+                onMotivoPontoClick={motivoPontoUltimoRally ? () => handleAbrirModalEdicaoPonto(motivoPontoUltimoRally) : null}
               />
             </div>
           </div>
