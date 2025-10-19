@@ -18,7 +18,7 @@ export const useControlePartida = (partida, duplas, initialScore = { a: 0, b: 0 
       try {
         const response = await api.get(`/pontuacao/${partida.partida_id}`);
         const pontos = response.data;
-        
+
         if (pontos && pontos.length > 0) {
           const scoreA = pontos.filter(p => p.dupla_vencedora_id === partida.dupla_a_id).length;
           const scoreB = pontos.filter(p => p.dupla_vencedora_id === partida.dupla_b_id).length;
@@ -128,11 +128,11 @@ export const useControlePartida = (partida, duplas, initialScore = { a: 0, b: 0 
       setPontoParaEditar(null);
       return;
     }
-    
+
     try {
       const response = await api.get(`/pontuacao/${partida.partida_id}`);
       const pontos = response.data;
-      
+
       if (pontos && pontos.length > 0) {
         const ultimoPonto = pontos[pontos.length - 1];
         setPontoParaEditar({ ...ultimoPonto, motivo_ponto_id: motivoPontoId });
@@ -146,21 +146,18 @@ export const useControlePartida = (partida, duplas, initialScore = { a: 0, b: 0 
   const handleSalvarEdicaoPonto = async (pontoId, motivoPontoId, setLogMessage, onMotivoPontoAtualizado) => {
     try {
       setLogMessage("Salvando alterações no motivo do ponto...");
-      
-      // Salvar dupla vencedora antiga para detectar mudança
+
       const duplaVencedoraAntiga = pontoParaEditar.dupla_vencedora_id;
-      
+
       const response = await api.patch(`/pontuacao/ponto/${pontoId}`, { motivo_ponto_id: motivoPontoId });
       const pontoAtualizado = response.data;
       console.log("Ponto atualizado:", pontoAtualizado);
-      
-      // Verificar se a dupla vencedora mudou
+
       if (pontoAtualizado.dupla_vencedora_id !== duplaVencedoraAntiga) {
-        // Recalcular placar: -1 da dupla antiga, +1 da dupla nova
         setScore(prev => {
           const timeAntigo = duplaVencedoraAntiga === partida.dupla_a_id ? 'a' : 'b';
           const timeNovo = pontoAtualizado.dupla_vencedora_id === partida.dupla_a_id ? 'a' : 'b';
-          
+
           return {
             ...prev,
             [timeAntigo]: Math.max(0, prev[timeAntigo] - 1),
@@ -171,7 +168,7 @@ export const useControlePartida = (partida, duplas, initialScore = { a: 0, b: 0 
       } else {
         setLogMessage("Motivo do ponto atualizado com sucesso.");
       }
-      
+
       onMotivoPontoAtualizado(motivoPontoId);
     } catch (error) {
       console.error("Erro ao atualizar o motivo do ponto:", error);
