@@ -20,6 +20,31 @@ export const useRallyLogica = (partida, duplas) => {
     return null;
   }, [duplas]);
 
+  const calcularProximoAtleta = useCallback((acaoRecemAdicionada, acoesAtuais) => {
+    if (!acaoRecemAdicionada) return null;
+
+    const timeAcaoAtual = getTimeAtleta(acaoRecemAdicionada.atleta_id);
+    if (!timeAcaoAtual) return null;
+
+    let acoesConsecutivasMesmoTime = 1;
+    for (let i = acoesAtuais.length - 1; i >= 0; i--) {
+      const acao = acoesAtuais[i];
+      if (getTimeAtleta(acao.atleta_id) === timeAcaoAtual) {
+        acoesConsecutivasMesmoTime++;
+      } else {
+        break;
+      }
+    }
+
+    if (acoesConsecutivasMesmoTime >= 3) return null;
+
+    const atletasDoTime = timeAcaoAtual === 'A'
+      ? [duplas.a1, duplas.a2]
+      : [duplas.b1, duplas.b2];
+
+    return atletasDoTime.find(a => a.atleta_id !== acaoRecemAdicionada.atleta_id);
+  }, [duplas, getTimeAtleta]);
+
   const handleSelecionarTecnica = useCallback(async (tecnicaId, setLogMessage) => {
     if (!atletaSelecionado) {
       setLogMessage("ERRO: Selecione um JOGADOR primeiro!");
@@ -100,18 +125,28 @@ export const useRallyLogica = (partida, duplas) => {
         }
       }
 
-      setAcoesRally(prev => [...prev, acaoSalva]);
+      setAcoesRally(prev => {
+        const novasAcoes = [...prev, acaoSalva];
+
+        const proximoAtleta = calcularProximoAtleta(acaoSalva, prev);
+        if (proximoAtleta) {
+          setAtletaSelecionado(proximoAtleta);
+        } else {
+          setAtletaSelecionado(null);
+        }
+
+        return novasAcoes;
+      });
 
       const tecnicaName = TECNICAS.find(t => t.id === tecnicaId)?.nome;
       setLogMessage(`Ação registrada: ${atletaSelecionado.nome_atleta.split(' ')[0]} (${tecnicaName})`);
 
-      setAtletaSelecionado(null);
       setActiveZone(null);
     } catch (error) {
       console.error("Erro ao registrar ação na API:", error);
       alert("Falha ao registrar a ação.");
     }
-  }, [atletaSelecionado, acoesRally, rallyId, activeZone, getTimeAtleta]);
+  }, [atletaSelecionado, acoesRally, rallyId, activeZone, getTimeAtleta, calcularProximoAtleta]);
 
   const handleSaque = async (atleta, setLogMessage) => {
     if (acoesRally.length > 0) return;
@@ -130,12 +165,17 @@ export const useRallyLogica = (partida, duplas) => {
       const resposta = await api.post('/pontuacao/acao', acaoData);
       const acaoSalva = resposta.data;
 
-      setAcoesRally(prev => [...prev, acaoSalva]);
+      setAcoesRally(prev => {
+        const novasAcoes = [...prev, acaoSalva];
+
+        setAtletaSelecionado(null);
+
+        return novasAcoes;
+      });
 
       const tecnicaName = TECNICAS.find(t => t.id === 12)?.nome;
       setLogMessage(`Saque registrado: ${atleta.nome_atleta.split(' ')[0]} (${tecnicaName})`);
 
-      setAtletaSelecionado(null);
       setActiveZone(null);
     } catch (error) {
       console.error("Erro ao registrar saque rápido:", error);
@@ -240,6 +280,7 @@ export const useRallyLogica = (partida, duplas) => {
       setIsPontoModalOpen(false);
       setPontoPendente(null);
       setActiveZone(null);
+      setAtletaSelecionado(null);
     }
   };
 
@@ -258,6 +299,7 @@ export const useRallyLogica = (partida, duplas) => {
     setMotivoPontoUltimoRally(null);
     setAcoesRally([]);
     setRallyId(uuidv4());
+    setAtletaSelecionado(null);
   };
 
   const onAcaoAtualizada = (acaoAtualizada) => {
