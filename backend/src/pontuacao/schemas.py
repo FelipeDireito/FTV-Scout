@@ -86,3 +86,10 @@ class AcaoUpdate(BaseModel):
     
     class Config:
         from_attributes = True
+
+
+class PontoUpdate(BaseModel):
+    motivo_ponto_id: int | None = Field(None, example=1)
+    
+    class Config:
+        from_attributes = True

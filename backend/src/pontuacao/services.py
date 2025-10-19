@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 import uuid
 
 from src.pontuacao import models, schemas
+from src.partidas.models import Partida
 
 
 def cadastra_acao(acao: schemas.Acao, db: Session):
@@ -98,3 +99,45 @@ def atualiza_acao(acao_id: int, acao_update: schemas.AcaoUpdate, db: Session):
     db.refresh(db_acao)
 
     return db_acao
+
+
+def atualiza_ponto(ponto_id: int, ponto_update: schemas.PontoUpdate, db: Session):
+    db_ponto = db.query(models.Ponto).filter(models.Ponto.ponto_id == ponto_id).first()
+
+    if not db_ponto:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ponto não encontrado")
+
+    motivo_antigo = db_ponto.motivo_ponto_id
+    dupla_vencedora_antiga = db_ponto.dupla_vencedora_id
+    
+    partida = db.query(Partida).filter(Partida.partida_id == db_ponto.partida_id).first()
+    if not partida:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Partida não encontrada")
+    
+    update_data = ponto_update.model_dump(exclude_unset=True)
+    novo_motivo = update_data.get('motivo_ponto_id', motivo_antigo)
+
+    motivos_ponto = [3, 4, 5] # Ataque, Bloqueio, Ace
+    
+    motivo_antigo_eh_ponto = motivo_antigo in motivos_ponto
+    novo_motivo_eh_ponto = novo_motivo in motivos_ponto
+    
+    mudou_categoria = motivo_antigo_eh_ponto != novo_motivo_eh_ponto
+    
+    if mudou_categoria:
+        if dupla_vencedora_antiga == partida.dupla_a_id:
+            db_ponto.dupla_vencedora_id = partida.dupla_b_id
+        else:
+            db_ponto.dupla_vencedora_id = partida.dupla_a_id
+        
+        atleta_ponto_temp = db_ponto.atleta_ponto_id
+        db_ponto.atleta_ponto_id = db_ponto.atleta_erro_id
+        db_ponto.atleta_erro_id = atleta_ponto_temp
+    
+    db_ponto.motivo_ponto_id = novo_motivo
+    
+    db.add(db_ponto)
+    db.commit()
+    db.refresh(db_ponto)
+
+    return db_ponto
