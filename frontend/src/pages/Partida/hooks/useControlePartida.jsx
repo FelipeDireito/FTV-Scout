@@ -146,11 +146,33 @@ export const useControlePartida = (partida, duplas, initialScore = { a: 0, b: 0 
   const handleSalvarEdicaoPonto = async (pontoId, motivoPontoId, setLogMessage, onMotivoPontoAtualizado) => {
     try {
       setLogMessage("Salvando alterações no motivo do ponto...");
+      
+      // Salvar dupla vencedora antiga para detectar mudança
+      const duplaVencedoraAntiga = pontoParaEditar.dupla_vencedora_id;
+      
       const response = await api.patch(`/pontuacao/ponto/${pontoId}`, { motivo_ponto_id: motivoPontoId });
       const pontoAtualizado = response.data;
       console.log("Ponto atualizado:", pontoAtualizado);
+      
+      // Verificar se a dupla vencedora mudou
+      if (pontoAtualizado.dupla_vencedora_id !== duplaVencedoraAntiga) {
+        // Recalcular placar: -1 da dupla antiga, +1 da dupla nova
+        setScore(prev => {
+          const timeAntigo = duplaVencedoraAntiga === partida.dupla_a_id ? 'a' : 'b';
+          const timeNovo = pontoAtualizado.dupla_vencedora_id === partida.dupla_a_id ? 'a' : 'b';
+          
+          return {
+            ...prev,
+            [timeAntigo]: Math.max(0, prev[timeAntigo] - 1),
+            [timeNovo]: prev[timeNovo] + 1
+          };
+        });
+        setLogMessage("Motivo atualizado! Placar ajustado.");
+      } else {
+        setLogMessage("Motivo do ponto atualizado com sucesso.");
+      }
+      
       onMotivoPontoAtualizado(motivoPontoId);
-      setLogMessage("Motivo do ponto atualizado com sucesso.");
     } catch (error) {
       console.error("Erro ao atualizar o motivo do ponto:", error);
       alert("Falha ao atualizar o motivo do ponto.");
