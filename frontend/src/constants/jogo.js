@@ -36,6 +36,7 @@ export const TECNICAS_SIMPLIFICADAS = [
   { id: 1, nome: "Cabeça" },
   { id: 3, nome: "Peito" },
   { id: 4, nome: "Coxa" },
+  { id: 6, nome: "Pé" },
   { id: 9, nome: "Shark" },
 ];
 
