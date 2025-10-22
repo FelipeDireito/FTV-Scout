@@ -32,6 +32,13 @@ export const TECNICAS = [
   { id: 12, nome: "Saque" },
 ];
 
+export const TECNICAS_SIMPLIFICADAS = [
+  { id: 1, nome: "Cabeça" },
+  { id: 3, nome: "Peito" },
+  { id: 4, nome: "Coxa" },
+  { id: 9, nome: "Shark" },
+];
+
 export const MOTIVOS_PONTO = [
   { id: 1, descricao: "Erro não forçado" },
   { id: 2, descricao: "Erro forçado" },
