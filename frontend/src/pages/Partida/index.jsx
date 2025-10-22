@@ -5,6 +5,7 @@ import useFalaParaTexto from '../../hooks/useFalaParaTexto';
 import { useControlePartida } from './hooks/useControlePartida';
 import { useRallyLogica } from './hooks/useRallyLogica';
 import { useValidacaoEstados } from './hooks/useValidacaoEstados';
+import { useSaqueAlternado } from './hooks/useSaqueAlternado';
 import MicIcon from '../../components/MicIcon';
 import ButtonAtleta from './components/ButtonAtleta';
 import DisplayQuadra from './components/DisplayQuadra';
@@ -41,11 +42,18 @@ function Partida() {
   } = useControlePartida(partida, duplas);
 
   const {
+    definirSacadorInicial,
+    atualizarSacadorAposPonto,
+    voltarSacador,
+    ehSacadorAtual
+  } = useSaqueAlternado(duplas);
+
+  const {
     acoesRally, ultimoRally, motivoPontoUltimoRally, atletaSelecionado, setAtletaSelecionado,
     activeZone, pontoPendente, isModalPontoOpen, setIsPontoModalOpen, timeVencedorForModal,
     handleSelecionarTecnica, handleSaque, openPointModal, handleFinalizarPonto,
     handleSelecionarZona, onRallyReset, onAcaoAtualizada, onMotivoPontoAtualizado
-  } = useRallyLogica(partida, duplas);
+  } = useRallyLogica(partida, duplas, definirSacadorInicial, atualizarSacadorAposPonto);
 
   const getTimeAtleta = useCallback((atletaId) => {
     if (duplas.a1.atleta_id === atletaId || duplas.a2.atleta_id === atletaId) return 'A';
@@ -104,7 +112,7 @@ function Partida() {
     <div className="flex flex-col h-screen bg-gray-900 text-white font-sans">
       {isModalPontoOpen && <ModalPonto timeVencedor={timeVencedorForModal} onClose={() => setIsPontoModalOpen(false)} onFinalizar={(motivoId) => handleFinalizarPonto(motivoId, setLogMessage, score, setScore)} acoesRally={acoesRally} duplas={duplas} />}
       {isModalFinalizarOpen && <ModalFinalizarPartida score={score} pontos={pontosPartida} partida={partida} onClose={fecharModalFinalizacao} onFinalizar={handleFinalizarPartida} />}
-      {isModalVoltarPontoOpen && <ModalVoltarPonto onClose={fecharModalVoltarPonto} onFinalizar={() => handleVoltarPonto(setLogMessage, onRallyReset)} />}
+      {isModalVoltarPontoOpen && <ModalVoltarPonto onClose={fecharModalVoltarPonto} onFinalizar={() => { handleVoltarPonto(setLogMessage, onRallyReset); voltarSacador(); }} />}
       {acaoParaEditar && <ModalEditarAcao
         acao={acaoParaEditar}
         onClose={() => handleAbrirModalEdicao(null)}
@@ -180,6 +188,7 @@ function Partida() {
               isRallyStarted={acoesRally.length > 0}
               onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
               disabledSaque={validacoes.saqueDesabilitado}
+              ehSacadorAtual={ehSacadorAtual(duplas.a1.atleta_id)}
             />
             <ButtonAtleta
               atleta={duplas.a2}
@@ -190,6 +199,7 @@ function Partida() {
               isRallyStarted={acoesRally.length > 0}
               onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
               disabledSaque={validacoes.saqueDesabilitado}
+              ehSacadorAtual={ehSacadorAtual(duplas.a2.atleta_id)}
             />
           </div>
 
@@ -226,6 +236,7 @@ function Partida() {
               isRallyStarted={acoesRally.length > 0}
               onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
               disabledSaque={validacoes.saqueDesabilitado}
+              ehSacadorAtual={ehSacadorAtual(duplas.b1.atleta_id)}
             />
             <ButtonAtleta
               atleta={duplas.b2}
@@ -236,6 +247,7 @@ function Partida() {
               isRallyStarted={acoesRally.length > 0}
               onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
               disabledSaque={validacoes.saqueDesabilitado}
+              ehSacadorAtual={ehSacadorAtual(duplas.b2.atleta_id)}
             />
           </div>
         </main>

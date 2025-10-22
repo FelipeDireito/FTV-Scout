@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import api from '../../../services/api';
 import { TIPO_ACAO_ID, TECNICAS } from '../../../constants/jogo';
 
-export const useRallyLogica = (partida, duplas) => {
+export const useRallyLogica = (partida, duplas, definirSacadorInicial = null, atualizarSacadorAposPonto = null) => {
   const [rallyId, setRallyId] = useState(uuidv4());
   const [acoesRally, setAcoesRally] = useState([]);
   const [ultimoRally, setUltimoRally] = useState([]);
@@ -151,6 +151,10 @@ export const useRallyLogica = (partida, duplas) => {
   const handleSaque = async (atleta, setLogMessage) => {
     if (acoesRally.length > 0) return;
 
+    if (definirSacadorInicial) {
+      definirSacadorInicial(atleta.atleta_id);
+    }
+
     const acaoData = {
       rally_id: rallyId,
       atleta_id: atleta.atleta_id,
@@ -272,6 +276,10 @@ export const useRallyLogica = (partida, duplas) => {
       await api.post('/pontuacao/ponto', pointData);
       setScore(prev => ({ ...prev, [timeVencedor.toLowerCase()]: prev[timeVencedor.toLowerCase()] + 1 }));
       setLogMessage(`Ponto para a Dupla ${timeVencedor}! Novo rally.`);
+
+      if (atualizarSacadorAposPonto) {
+        atualizarSacadorAposPonto(timeVencedor);
+      }
 
       setUltimoRally(rallyActionsAtualizado);
       setMotivoPontoUltimoRally(motivoPontoId);

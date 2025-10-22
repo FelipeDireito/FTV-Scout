@@ -8,7 +8,8 @@ const ButtonAtleta = memo(({
   disabled, 
   isRallyStarted, 
   onSaqueClick,
-  disabledSaque = false
+  disabledSaque = false,
+  ehSacadorAtual = false
 }) => (
   <button
     onClick={onClick}
@@ -24,7 +25,7 @@ const ButtonAtleta = memo(({
       {atleta.nome_atleta}
     </span>
 
-    {!isRallyStarted && !disabledSaque && (
+    {!isRallyStarted && !disabledSaque && (ehSacadorAtual || ehSacadorAtual === null) && (
       <div
         onClick={(e) => {
           e.stopPropagation();
