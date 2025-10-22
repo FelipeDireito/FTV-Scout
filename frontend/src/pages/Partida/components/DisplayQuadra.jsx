@@ -1,17 +1,20 @@
 import { memo, useCallback } from 'react';
 
-const DisplayQuadra = memo(({ 
-  activeZone, 
-  onClickZona, 
-  disabled = false, 
+const DisplayQuadra = memo(({
+  activeZone,
+  onClickZona,
+  disabled = false,
   obrigatorio = false,
-  isZonaDesabilitada = () => false 
+  isZonaDesabilitada = () => false,
+  ladosInvertidos = false
 }) => {
   const renderZona = (side, numeroZona) => {
     const isSelecionado = activeZone?.side === side && activeZone?.zona === numeroZona;
-    const zonaDesabilitada = isZonaDesabilitada(side);
+
+    const sideParaValidacao = ladosInvertidos ? (side === 'A' ? 'B' : 'A') : side;
+    const zonaDesabilitada = isZonaDesabilitada(sideParaValidacao);
     const isDisabled = disabled || zonaDesabilitada;
-    
+
     return (
       <div
         key={`${side}-${numeroZona}`}

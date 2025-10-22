@@ -6,6 +6,8 @@ import { useControlePartida } from './hooks/useControlePartida';
 import { useRallyLogica } from './hooks/useRallyLogica';
 import { useValidacaoEstados } from './hooks/useValidacaoEstados';
 import { useSaqueAlternado } from './hooks/useSaqueAlternado';
+import { usePartidaUI } from './hooks/usePartidaUI';
+import { usePartidaHelpers } from './hooks/usePartidaHelpers';
 import MicIcon from '../../components/MicIcon';
 import ButtonAtleta from './components/ButtonAtleta';
 import DisplayQuadra from './components/DisplayQuadra';
@@ -29,7 +31,6 @@ function Partida() {
   };
 
   const [logMessage, setLogMessage] = useState("Selecione um atleta para iniciar o rally.");
-  const [sidebarPosition, setSidebarPosition] = useState('right');
   const [isMicFeatureEnabled, setIsMicFeatureEnabled] = useState(true);
   const { texto, startEscutando, stopEscutando, isEscutando, setTexto } = useFalaParaTexto({ continuous: true });
 
@@ -55,11 +56,16 @@ function Partida() {
     handleSelecionarZona, onRallyReset, onAcaoAtualizada, onMotivoPontoAtualizado
   } = useRallyLogica(partida, duplas, definirSacadorInicial, atualizarSacadorAposPonto);
 
-  const getTimeAtleta = useCallback((atletaId) => {
-    if (duplas.a1.atleta_id === atletaId || duplas.a2.atleta_id === atletaId) return 'A';
-    if (duplas.b1.atleta_id === atletaId || duplas.b2.atleta_id === atletaId) return 'B';
-    return null;
-  }, [duplas]);
+  const { getTimeAtleta, getAtletaById } = usePartidaHelpers(duplas);
+
+  const {
+    sidebarPosition,
+    ladosInvertidos,
+    toggleSidebarPosition,
+    toggleLadosQuadra,
+    duplasVisuais,
+    placarVisual
+  } = usePartidaUI(duplas, score);
 
   const validacoes = useValidacaoEstados({
     acoesRally,
@@ -68,17 +74,6 @@ function Partida() {
     getTimeAtleta,
     score,
   });
-
-  const getAtletaById = useCallback((atletaId) => {
-    for (const key in duplas) {
-      if (duplas[key].atleta_id === atletaId) return duplas[key];
-    }
-    return null;
-  }, [duplas]);
-
-  const toggleSidebarPosition = useCallback(() => {
-    setSidebarPosition(prev => (prev === 'right' ? 'left' : 'right'));
-  }, []);
 
   useEffect(() => {
     const rallyEmAndamento = acoesRally.length > 0;
@@ -131,40 +126,60 @@ function Partida() {
 
       <header className="grid grid-cols-3 items-center p-2 md:p-4 bg-black/30 shadow-lg relative z-20">
         <div className="text-left hidden md:block">
-          <h2 className="text-lg md:text-2xl font-bold text-blue-400">DUPLA A</h2>
-          <p className="text-xs md:text-sm text-gray-300 truncate">{duplas.a1.nome_atleta} / {duplas.a2.nome_atleta}</p>
+          <h2 className={`text-lg md:text-2xl font-bold ${duplasVisuais.esquerda.cor === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
+            DUPLA {duplasVisuais.esquerda.dupla}
+          </h2>
+          <p className="text-xs md:text-sm text-gray-300 truncate">
+            {duplasVisuais.esquerda.atletas[0].nome_atleta} / {duplasVisuais.esquerda.atletas[1].nome_atleta}
+          </p>
         </div>
         <div className="text-center col-span-3 md:col-span-1">
           <h1 className="text-lg md:text-2xl font-bold hidden md:block">{partida.nome_partida}</h1>
           <div className="flex justify-center items-center">
             <button
-              onClick={() => openPointModal('A')}
+              onClick={() => openPointModal(duplasVisuais.esquerda.dupla)}
               disabled={validacoes.botaoPontoDesabilitado}
               className={`text-xl md:text-2xl rounded-full w-7 h-7 md:w-14 md:h-10 flex items-center justify-center transition-colors
                 ${validacoes.botaoPontoDesabilitado
                   ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                  : 'bg-gray-700 hover:bg-blue-600'}`}
+                  : `bg-gray-700 hover:bg-${duplasVisuais.esquerda.cor === 'blue' ? 'blue' : 'red'}-600`}`}
             >
               ✚
             </button>
-            <span className="text-4xl md:text-7xl font-black tracking-tighter mx-2 md:mx-4">{score.a}</span>
+            <span className="text-4xl md:text-7xl font-black tracking-tighter mx-2 md:mx-4">{placarVisual.esquerda}</span>
             <span className="text-2xl md:text-5xl font-light text-gray-500">-</span>
-            <span className="text-4xl md:text-7xl font-black tracking-tighter mx-2 md:mx-4">{score.b}</span>
+            <span className="text-4xl md:text-7xl font-black tracking-tighter mx-2 md:mx-4">{placarVisual.direita}</span>
             <button
-              onClick={() => openPointModal('B')}
+              onClick={() => openPointModal(duplasVisuais.direita.dupla)}
               disabled={validacoes.botaoPontoDesabilitado}
               className={`text-xl md:text-2xl rounded-full w-7 h-7 md:w-14 md:h-10 flex items-center justify-center transition-colors
                 ${validacoes.botaoPontoDesabilitado
                   ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                  : 'bg-gray-700 hover:bg-red-600'}`}
+                  : `bg-gray-700 hover:bg-${duplasVisuais.direita.cor === 'blue' ? 'blue' : 'red'}-600`}`}
             >
               ✚
             </button>
           </div>
         </div>
-        <div className="text-right hidden md:block">
-          <h2 className="text-lg md:text-2xl font-bold text-red-400">DUPLA B</h2>
-          <p className="text-xs md:text-sm text-gray-300 truncate">{duplas.b1.nome_atleta} / {duplas.b2.nome_atleta}</p>
+        <div className="text-right flex flex-col items-end gap-2">
+          <div className="hidden md:block">
+            <h2 className={`text-lg md:text-2xl font-bold ${duplasVisuais.direita.cor === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
+              DUPLA {duplasVisuais.direita.dupla}
+            </h2>
+            <p className="text-xs md:text-sm text-gray-300 truncate">
+              {duplasVisuais.direita.atletas[0].nome_atleta} / {duplasVisuais.direita.atletas[1].nome_atleta}
+            </p>
+          </div>
+          <button
+            onClick={toggleLadosQuadra}
+            className="bg-gray-700 hover:bg-gray-600 text-white text-xs py-1.5 px-3 rounded transition-colors flex items-center gap-2"
+            title="Inverter lados da quadra"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+            <span className="hidden md:inline">Inverter Lados</span>
+          </button>
         </div>
       </header>
 
@@ -180,26 +195,26 @@ function Partida() {
         <main className="flex-1 flex flex-col md:flex-row p-2 md:p-4 gap-2 md:gap-4 overflow-hidden">
           <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
             <ButtonAtleta
-              atleta={duplas.a1}
-              onClick={() => setAtletaSelecionado(duplas.a1)}
-              isSelecionado={atletaSelecionado?.atleta_id === duplas.a1.atleta_id}
-              corTime="blue"
+              atleta={duplasVisuais.esquerda.atletas[0]}
+              onClick={() => setAtletaSelecionado(duplasVisuais.esquerda.atletas[0])}
+              isSelecionado={atletaSelecionado?.atleta_id === duplasVisuais.esquerda.atletas[0].atleta_id}
+              corTime={duplasVisuais.esquerda.cor}
               disabled={validacoes.atletaDesabilitado}
               isRallyStarted={acoesRally.length > 0}
               onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
               disabledSaque={validacoes.saqueDesabilitado}
-              ehSacadorAtual={ehSacadorAtual(duplas.a1.atleta_id)}
+              ehSacadorAtual={ehSacadorAtual(duplasVisuais.esquerda.atletas[0].atleta_id)}
             />
             <ButtonAtleta
-              atleta={duplas.a2}
-              onClick={() => setAtletaSelecionado(duplas.a2)}
-              isSelecionado={atletaSelecionado?.atleta_id === duplas.a2.atleta_id}
-              corTime="blue"
+              atleta={duplasVisuais.esquerda.atletas[1]}
+              onClick={() => setAtletaSelecionado(duplasVisuais.esquerda.atletas[1])}
+              isSelecionado={atletaSelecionado?.atleta_id === duplasVisuais.esquerda.atletas[1].atleta_id}
+              corTime={duplasVisuais.esquerda.cor}
               disabled={validacoes.atletaDesabilitado}
               isRallyStarted={acoesRally.length > 0}
               onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
               disabledSaque={validacoes.saqueDesabilitado}
-              ehSacadorAtual={ehSacadorAtual(duplas.a2.atleta_id)}
+              ehSacadorAtual={ehSacadorAtual(duplasVisuais.esquerda.atletas[1].atleta_id)}
             />
           </div>
 
@@ -211,6 +226,7 @@ function Partida() {
                 disabled={validacoes.validacaoZona.desabilitado}
                 obrigatorio={validacoes.validacaoZona.obrigatorio}
                 isZonaDesabilitada={validacoes.isZonaDesabilitada}
+                ladosInvertidos={ladosInvertidos}
               />
             </div>
             <div className="h-1/3 min-h-[100px] hidden md:flex">
@@ -228,26 +244,26 @@ function Partida() {
 
           <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
             <ButtonAtleta
-              atleta={duplas.b1}
-              onClick={() => setAtletaSelecionado(duplas.b1)}
-              isSelecionado={atletaSelecionado?.atleta_id === duplas.b1.atleta_id}
-              corTime="red"
+              atleta={duplasVisuais.direita.atletas[0]}
+              onClick={() => setAtletaSelecionado(duplasVisuais.direita.atletas[0])}
+              isSelecionado={atletaSelecionado?.atleta_id === duplasVisuais.direita.atletas[0].atleta_id}
+              corTime={duplasVisuais.direita.cor}
               disabled={validacoes.atletaDesabilitado}
               isRallyStarted={acoesRally.length > 0}
               onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
               disabledSaque={validacoes.saqueDesabilitado}
-              ehSacadorAtual={ehSacadorAtual(duplas.b1.atleta_id)}
+              ehSacadorAtual={ehSacadorAtual(duplasVisuais.direita.atletas[0].atleta_id)}
             />
             <ButtonAtleta
-              atleta={duplas.b2}
-              onClick={() => setAtletaSelecionado(duplas.b2)}
-              isSelecionado={atletaSelecionado?.atleta_id === duplas.b2.atleta_id}
-              corTime="red"
+              atleta={duplasVisuais.direita.atletas[1]}
+              onClick={() => setAtletaSelecionado(duplasVisuais.direita.atletas[1])}
+              isSelecionado={atletaSelecionado?.atleta_id === duplasVisuais.direita.atletas[1].atleta_id}
+              corTime={duplasVisuais.direita.cor}
               disabled={validacoes.atletaDesabilitado}
               isRallyStarted={acoesRally.length > 0}
               onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
               disabledSaque={validacoes.saqueDesabilitado}
-              ehSacadorAtual={ehSacadorAtual(duplas.b2.atleta_id)}
+              ehSacadorAtual={ehSacadorAtual(duplasVisuais.direita.atletas[1].atleta_id)}
             />
           </div>
         </main>
