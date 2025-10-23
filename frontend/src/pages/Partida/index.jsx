@@ -13,6 +13,7 @@ import ButtonAtleta from './components/ButtonAtleta';
 import DisplayQuadra from './components/DisplayQuadra';
 import RallyLog from './components/RallyLog';
 import AcoesSidebar from './components/AcoesSidebar';
+import PosicaoSidebar from './components/PosicaoSidebar';
 import ModalPonto from './components/modals/ModalPonto';
 import ModalVoltarPonto from './components/modals/ModalVoltarPonto';
 import ModalEditarAcao from './components/modals/ModalEditarAcao';
@@ -53,7 +54,7 @@ function Partida() {
     acoesRally, ultimoRally, motivoPontoUltimoRally, atletaSelecionado, setAtletaSelecionado,
     activeZone, pontoPendente, isModalPontoOpen, setIsPontoModalOpen, timeVencedorForModal,
     handleSelecionarTecnica, handleSaque, openPointModal, handleFinalizarPonto,
-    handleSelecionarZona, onRallyReset, onAcaoAtualizada, onMotivoPontoAtualizado
+    handleSelecionarZona, handleSelecionarPosicao, onRallyReset, onAcaoAtualizada, onMotivoPontoAtualizado
   } = useRallyLogica(partida, duplas, definirSacadorInicial, atualizarSacadorAposPonto);
 
   const { getTimeAtleta, getAtletaById } = usePartidaHelpers(duplas);
@@ -188,11 +189,11 @@ function Partida() {
           onSelectTecnica={(tecnicaId) => handleSelecionarTecnica(tecnicaId, setLogMessage)}
           onTogglePosition={toggleSidebarPosition}
           position={sidebarPosition}
-          className={sidebarPosition === 'right' ? 'order-last' : ''}
+          className={sidebarPosition === 'left' ? 'order-first' : 'order-last'}
           disabled={validacoes.tecnicaDesabilitada}
         />
 
-        <main className="flex-1 flex flex-col md:flex-row p-2 md:p-4 gap-2 md:gap-4 overflow-hidden">
+        <main className="flex-1 flex flex-col md:flex-row p-2 md:p-4 gap-2 md:gap-4 overflow-hidden order-2">
           <div className="flex md:flex-col justify-around gap-2 md:gap-4 md:w-[15%] h-16 md:h-full">
             <ButtonAtleta
               atleta={duplasVisuais.esquerda.atletas[0]}
@@ -267,6 +268,13 @@ function Partida() {
             />
           </div>
         </main>
+
+        <PosicaoSidebar
+          onSelectPosicao={handleSelecionarPosicao}
+          posicaoAtual={activeZone?.zona}
+          className={sidebarPosition === 'left' ? 'order-last' : 'order-first'}
+          disabled={!atletaSelecionado}
+        />
       </div>
 
       <footer className="bg-black/30 p-3 shadow-lg space-y-3">

@@ -88,7 +88,6 @@ export const useRallyLogica = (partida, duplas, definirSacadorInicial = null, at
     try {
       const resposta = await api.post('/pontuacao/acao', acaoData);
       const acaoSalva = resposta.data;
-      console.log("Ação registrada com sucesso!", acaoSalva);
 
       if (acoesRally.length > 0) {
         const ultimaAcao = acoesRally[acoesRally.length - 1];
@@ -312,6 +311,7 @@ export const useRallyLogica = (partida, duplas, definirSacadorInicial = null, at
     setAcoesRally([]);
     setRallyId(uuidv4());
     setAtletaSelecionado(null);
+    setActiveZone(null);
   };
 
   const onAcaoAtualizada = (acaoAtualizada) => {
@@ -323,6 +323,10 @@ export const useRallyLogica = (partida, duplas, definirSacadorInicial = null, at
   const onMotivoPontoAtualizado = (novoMotivoPontoId) => {
     setMotivoPontoUltimoRally(novoMotivoPontoId);
   };
+
+  const handleSelecionarPosicao = useCallback((posicao) => {
+    setActiveZone({ zona: posicao, side: null });
+  }, []);
 
   return {
     rallyId,
@@ -342,6 +346,7 @@ export const useRallyLogica = (partida, duplas, definirSacadorInicial = null, at
     openPointModal,
     handleFinalizarPonto,
     handleSelecionarZona,
+    handleSelecionarPosicao,
     onRallyReset,
     onAcaoAtualizada,
     onMotivoPontoAtualizado,
