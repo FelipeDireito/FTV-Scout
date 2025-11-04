@@ -15,7 +15,9 @@ from src.estatisticas.schemas import (
     MapaCalor,
     MapaCalorPosicoes,
     PartidaHistoricoAtleta,
-    PartidaHistoricoDupla
+    PartidaHistoricoDupla,
+    EstatisticasVitoriasAtleta,
+    EstatisticasVitoriasDupla
 )
 from src.estatisticas.services import (
     obtem_estatisticas_atleta, 
@@ -33,7 +35,10 @@ from src.estatisticas.services import (
     obtem_mapa_calor_atleta,
     obtem_mapa_calor_posicoes_atleta
 )
-
+from src.estatisticas.services_historico import (
+    obtem_estatisticas_vitorias_atleta,
+    obtem_estatisticas_vitorias_dupla
+)
 
 estatisticas_router = APIRouter(tags=["estatisticas"], prefix="/estatisticas")
 
@@ -319,6 +324,40 @@ def obter_historico_partidas_dupla(
     from src.estatisticas.services_historico import obtem_historico_partidas_dupla
     
     resultado = obtem_historico_partidas_dupla(db, dupla_id)
+    
+    if resultado is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Dupla com ID {dupla_id} não encontrada"
+        )
+    
+    return resultado
+
+
+@estatisticas_router.get("/atleta/{atleta_id}/estatisticas-vitorias", response_model=EstatisticasVitoriasAtleta)
+def obter_estatisticas_vitorias_atleta(
+    atleta_id: int,
+    db: Session = Depends(get_db)
+):
+
+    resultado = obtem_estatisticas_vitorias_atleta(db, atleta_id)
+    
+    if resultado is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Atleta com ID {atleta_id} não encontrado"
+        )
+    
+    return resultado
+
+
+@estatisticas_router.get("/dupla/{dupla_id}/estatisticas-vitorias", response_model=EstatisticasVitoriasDupla)
+def obter_estatisticas_vitorias_dupla(
+    dupla_id: int,
+    db: Session = Depends(get_db)
+):
+
+    resultado = obtem_estatisticas_vitorias_dupla(db, dupla_id)
     
     if resultado is None:
         raise HTTPException(

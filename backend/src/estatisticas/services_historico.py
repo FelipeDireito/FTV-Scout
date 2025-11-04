@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, case
 from src.atletas.models import Atleta
 from src.duplas.models import Dupla
 from src.partidas.models import Partida
@@ -162,3 +162,79 @@ def obtem_historico_partidas_dupla(db: Session, dupla_id: int):
         resultado.append(partida_stats)
     
     return resultado
+
+
+def obtem_estatisticas_vitorias_atleta(db: Session, atleta_id: int):
+
+    atleta = db.query(Atleta).filter(Atleta.atleta_id == atleta_id).first()
+    if not atleta:
+        return None
+
+    duplas_atleta = db.query(Dupla).filter(
+        Dupla.atletas.any(atleta_id=atleta_id)
+    ).all()
+    
+    if not duplas_atleta:
+        return {
+            "atleta_id": atleta.atleta_id,
+            "nome_atleta": atleta.nome_atleta,
+            "total_partidas": 0,
+            "vitorias": 0,
+            "derrotas": 0,
+            "percentual_vitorias": 0.0
+        }
+    
+    duplas_ids = [dupla.dupla_id for dupla in duplas_atleta]
+
+    partidas = db.query(Partida).filter(
+        (Partida.dupla_a_id.in_(duplas_ids)) | (Partida.dupla_b_id.in_(duplas_ids))
+    ).all()
+    
+    total_partidas = len(partidas)
+    vitorias = 0
+    
+    for partida in partidas:
+        if partida.dupla_a_id in duplas_ids:
+            dupla_atleta_id = partida.dupla_a_id
+        else:
+            dupla_atleta_id = partida.dupla_b_id
+        
+        if partida.dupla_vencedora_id == dupla_atleta_id:
+            vitorias += 1
+    
+    derrotas = total_partidas - vitorias
+    percentual_vitorias = (vitorias / total_partidas * 100) if total_partidas > 0 else 0.0
+    
+    return {
+        "atleta_id": atleta.atleta_id,
+        "nome_atleta": atleta.nome_atleta,
+        "total_partidas": total_partidas,
+        "vitorias": vitorias,
+        "derrotas": derrotas,
+        "percentual_vitorias": round(percentual_vitorias, 1)
+    }
+
+
+def obtem_estatisticas_vitorias_dupla(db: Session, dupla_id: int):
+
+    dupla = db.query(Dupla).filter(Dupla.dupla_id == dupla_id).first()
+    if not dupla:
+        return None
+
+    partidas = db.query(Partida).filter(
+        (Partida.dupla_a_id == dupla_id) | (Partida.dupla_b_id == dupla_id)
+    ).all()
+    
+    total_partidas = len(partidas)
+    vitorias = sum(1 for p in partidas if p.dupla_vencedora_id == dupla_id)
+    derrotas = total_partidas - vitorias
+    percentual_vitorias = (vitorias / total_partidas * 100) if total_partidas > 0 else 0.0
+    
+    return {
+        "dupla_id": dupla.dupla_id,
+        "nome_dupla": dupla.nome_dupla,
+        "total_partidas": total_partidas,
+        "vitorias": vitorias,
+        "derrotas": derrotas,
+        "percentual_vitorias": round(percentual_vitorias, 1)
+    }

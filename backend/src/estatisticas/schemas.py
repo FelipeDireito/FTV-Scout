@@ -269,3 +269,29 @@ class PartidaHistoricoDupla(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class EstatisticasVitoriasAtleta(BaseModel):
+    
+    atleta_id: int
+    nome_atleta: str
+    total_partidas: int = Field(..., description="Total de partidas jogadas")
+    vitorias: int = Field(..., description="Total de vitórias")
+    derrotas: int = Field(..., description="Total de derrotas")
+    percentual_vitorias: float = Field(..., description="Percentual de vitórias")
+
+    class Config:
+        from_attributes = True
+
+
+class EstatisticasVitoriasDupla(BaseModel):
+    
+    dupla_id: int
+    nome_dupla: str
+    total_partidas: int = Field(..., description="Total de partidas jogadas")
+    vitorias: int = Field(..., description="Total de vitórias")
+    derrotas: int = Field(..., description="Total de derrotas")
+    percentual_vitorias: float = Field(..., description="Percentual de vitórias")
+
+    class Config:
+        from_attributes = True
