@@ -229,3 +229,43 @@ class MapaCalorPosicoes(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class PartidaHistoricoAtleta(BaseModel):
+    
+    partida_id: int
+    nome_partida: str
+    data_partida: Optional[str] = None
+    dupla_adversaria: str = Field(..., description="Nome da dupla adversária")
+    placar_a: int
+    placar_b: int
+    vitoria: bool = Field(..., description="Se o atleta venceu esta partida")
+    
+    atleta_id: int
+    nome_atleta: str
+    ataque_pontos: int = Field(..., description="Pontos de ataque")
+    saque_aces: int = Field(..., description="Pontos de saque (aces)")
+    total_erros: int = Field(..., description="Total de erros")
+
+    class Config:
+        from_attributes = True
+
+
+class PartidaHistoricoDupla(BaseModel):
+    
+    partida_id: int
+    nome_partida: str
+    data_partida: Optional[str] = None
+    dupla_adversaria: str = Field(..., description="Nome da dupla adversária")
+    placar_a: int
+    placar_b: int
+    vitoria: bool = Field(..., description="Se a dupla venceu esta partida")
+    
+    dupla_id: int
+    nome_dupla: str
+    ataque_pontos: int = Field(..., description="Pontos de ataque")
+    saque_aces: int = Field(..., description="Pontos de saque (aces)")
+    total_erros: int = Field(..., description="Total de erros")
+
+    class Config:
+        from_attributes = True

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 
 from src.core.database import get_db
 from src.estatisticas.schemas import (
@@ -13,7 +13,9 @@ from src.estatisticas.schemas import (
     DuplaEstatisticasCompletas,
     AtletaEstatisticasCompletas,
     MapaCalor,
-    MapaCalorPosicoes
+    MapaCalorPosicoes,
+    PartidaHistoricoAtleta,
+    PartidaHistoricoDupla
 )
 from src.estatisticas.services import (
     obtem_estatisticas_atleta, 
@@ -284,6 +286,44 @@ def obter_mapa_calor_posicoes_atleta(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Atleta com ID {atleta_id} não encontrado ou tipo de ação inválido"
+        )
+    
+    return resultado
+
+
+@estatisticas_router.get("/atleta/{atleta_id}/historico-partidas", response_model=List[PartidaHistoricoAtleta])
+def obter_historico_partidas_atleta(
+    atleta_id: int,
+    db: Session = Depends(get_db)
+):
+
+    from src.estatisticas.services_historico import obtem_historico_partidas_atleta
+    
+    resultado = obtem_historico_partidas_atleta(db, atleta_id)
+    
+    if resultado is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Atleta com ID {atleta_id} não encontrado"
+        )
+    
+    return resultado
+
+
+@estatisticas_router.get("/dupla/{dupla_id}/historico-partidas", response_model=List[PartidaHistoricoDupla])
+def obter_historico_partidas_dupla(
+    dupla_id: int,
+    db: Session = Depends(get_db)
+):
+
+    from src.estatisticas.services_historico import obtem_historico_partidas_dupla
+    
+    resultado = obtem_historico_partidas_dupla(db, dupla_id)
+    
+    if resultado is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Dupla com ID {dupla_id} não encontrada"
         )
     
     return resultado
