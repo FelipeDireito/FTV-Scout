@@ -4,6 +4,14 @@ from pydantic import BaseModel, Field, model_validator
 from datetime import datetime
 
 
+class DuplaInfo(BaseModel):
+    dupla_id: int
+    nome_dupla: str
+
+    class Config:
+        from_attributes = True
+
+
 class PartidaCreate(BaseModel):
     nome_partida: str = Field(..., example="Final Campeonato 2024")
     data_hora: datetime = Field(default_factory=datetime.utcnow)
@@ -54,3 +62,17 @@ class PartidaCreateComAtletas(BaseModel):
         if len(atletas) != len(set(atletas)):
             raise ValueError("Todos os atletas devem ser diferentes.")
         return self
+
+
+class PartidaComDuplas(BaseModel):
+    partida_id: int
+    nome_partida: str
+    data_hora: datetime
+    dupla_a: DuplaInfo
+    dupla_b: DuplaInfo
+    dupla_vencedora_id: Optional[int] = None
+    placar_final_dupla_a: Optional[int] = None
+    placar_final_dupla_b: Optional[int] = None
+
+    class Config:
+        from_attributes = True

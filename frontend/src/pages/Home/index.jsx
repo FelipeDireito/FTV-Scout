@@ -1,7 +1,33 @@
 import { Link } from 'react-router-dom';
-
+import { useEffect, useState } from 'react';
+import api from '../../services/api';
 
 function Home() {
+  const [partidasRecentes, setPartidasRecentes] = useState([]);
+  const [loadingPartidas, setLoadingPartidas] = useState(true);
+  const [errorPartidas, setErrorPartidas] = useState(null);
+
+  useEffect(() => {
+    const fetchPartidas = async () => {
+      setLoadingPartidas(true);
+      setErrorPartidas(null);
+      try {
+        const resp = await api.get('/partidas/recentes');
+        const partidas = resp.data.map(p => ({
+          ...p,
+          nome_duplas: `${p.dupla_a.nome_dupla} vs. ${p.dupla_b.nome_dupla}`,
+          data_partida: p.data_hora,
+        }));
+        setPartidasRecentes(partidas);
+      } catch (err) {
+        console.error('Erro ao carregar partidas:', err);
+        setErrorPartidas('Erro ao carregar partidas');
+      } finally {
+        setLoadingPartidas(false);
+      }
+    };
+    fetchPartidas();
+  }, []);
   return (
     <div className="container mx-auto p-4 md:p-8 flex flex-col min-h-screen">
       <h1 className="text-4xl md:text-5xl font-bold my-8 text-center md:text-left text-gray-200">FTV Scout</h1>
@@ -24,16 +50,34 @@ function Home() {
         <div className="hidden md:flex flex-col">
           <h2 className="text-2xl font-semibold mb-4 text-gray-300">Partidas Recentes</h2>
           <div className="space-y-4 overflow-y-auto pr-2">
-            <div className="bg-[#1E1E1E] p-4 rounded-lg cursor-pointer hover:bg-[#2a2a2a] transition-colors">
-              <h3 className="font-bold text-lg">Final do Torneio de Verão</h3>
-              <p className="text-gray-400">Leo/Felipe vs. Ajax/Victor</p>
-              <p className="text-right text-sm text-gray-500 mt-2">07/09/2025</p>
-            </div>
-            <div className="bg-[#1E1E1E] p-4 rounded-lg cursor-pointer hover:bg-[#2a2a2a] transition-colors">
-              <h3 className="font-bold text-lg">Treino Semanal A vs B</h3>
-              <p className="text-gray-400">Ricardo/Beto vs. Giba/Nunes</p>
-              <p className="text-right text-sm text-gray-500 mt-2">05/09/2025</p>
-            </div>
+            {loadingPartidas ? (
+              <div className="text-gray-400">Carregando...</div>
+            ) : errorPartidas ? (
+              <div className="text-red-400">{errorPartidas}</div>
+            ) : partidasRecentes.length === 0 ? (
+              <div className="text-gray-400">Nenhuma partida encontrada</div>
+            ) : (
+              partidasRecentes.map((partida) => (
+                <Link
+                  key={partida.partida_id}
+                  to={`/analise/${partida.partida_id}`}
+                  className="bg-[#1E1E1E] p-4 rounded-lg cursor-pointer hover:bg-[#2a2a2a] transition-colors block"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg">{partida.nome_partida || `Partida #${partida.partida_id}`}</h3>
+                      <p className="text-gray-400">{(partida.nome_duplas || partida.duplas_vs || '')}</p>
+                    </div>
+                    {partida.placar_final_dupla_a !== null && partida.placar_final_dupla_b !== null && (
+                      <span className="text-sm font-semibold text-gray-300 bg-gray-700 px-2 py-1 rounded ml-3">
+                        {partida.placar_final_dupla_a} x {partida.placar_final_dupla_b}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-right text-sm text-gray-500 mt-2">{partida.data_partida ? new Date(partida.data_partida).toLocaleDateString() : ''}</p>
+                </Link>
+              ))
+            )}
           </div>
         </div>
       </main>

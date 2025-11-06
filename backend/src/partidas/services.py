@@ -20,6 +20,48 @@ def obter_todas_partidas(db: Session):
     return db.query(PartidaModel).all()
 
 
+def obter_partidas_recentes(db: Session, limit: int = 3):
+    partidas = (
+        db.query(PartidaModel)
+        .order_by(PartidaModel.data_hora.desc())
+        .limit(limit)
+        .all()
+    )
+    
+    # Buscar duplas em uma única query
+    duplas_ids = set()
+    for partida in partidas:
+        if partida.dupla_a_id:
+            duplas_ids.add(partida.dupla_a_id)
+        if partida.dupla_b_id:
+            duplas_ids.add(partida.dupla_b_id)
+    
+    duplas_map = {}
+    if duplas_ids:
+        duplas = db.query(DuplaModel).filter(DuplaModel.dupla_id.in_(duplas_ids)).all()
+        duplas_map = {dupla.dupla_id: dupla for dupla in duplas}
+    
+    # Montar resultado com duplas
+    resultado = []
+    for partida in partidas:
+        dupla_a = duplas_map.get(partida.dupla_a_id)
+        dupla_b = duplas_map.get(partida.dupla_b_id)
+        
+        if dupla_a and dupla_b:
+            resultado.append({
+                "partida_id": partida.partida_id,
+                "nome_partida": partida.nome_partida,
+                "data_hora": partida.data_hora,
+                "dupla_a": {"dupla_id": dupla_a.dupla_id, "nome_dupla": dupla_a.nome_dupla},
+                "dupla_b": {"dupla_id": dupla_b.dupla_id, "nome_dupla": dupla_b.nome_dupla},
+                "dupla_vencedora_id": partida.dupla_vencedora_id,
+                "placar_final_dupla_a": partida.placar_final_dupla_a,
+                "placar_final_dupla_b": partida.placar_final_dupla_b,
+            })
+    
+    return resultado
+
+
 def obter_partida_por_id(db: Session, partida_id: int) -> PartidaModel | None:
     return db.query(PartidaModel).filter(PartidaModel.partida_id == partida_id).first()
 
