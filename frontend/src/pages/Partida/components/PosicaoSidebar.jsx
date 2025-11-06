@@ -35,12 +35,12 @@ const PosicaoSidebar = memo(({
   onSelectPosicao, 
   posicaoAtual,
   className = '',
-  disabled = false
+  disabled = false,
+  quadraEspelhada = false
 }) => {
-  // Layout espelhado da quadra real de vôlei
-  // Linha de fundo: 5, 6, 1
-  // Linha de frente: 4, 3, 2
-  const posicoes = [5, 4, 6, 3, 1, 2];
+  const posicoes = quadraEspelhada 
+    ? [2, 1, 3, 6, 4, 5] 
+    : [5, 4, 6, 3, 1, 2];
 
   return (
     <div className={`bg-black/30 p-2 flex flex-col gap-2 ${className}`}>
@@ -57,9 +57,6 @@ const PosicaoSidebar = memo(({
             disabled={disabled}
           />
         ))}
-      </div>
-      <div className="text-center text-[10px] text-gray-500 leading-tight">
-        Posição do atleta na quadra
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { useValidacaoEstados } from './hooks/useValidacaoEstados';
 import { useSaqueAlternado } from './hooks/useSaqueAlternado';
 import { usePartidaUI } from './hooks/usePartidaUI';
 import { usePartidaHelpers } from './hooks/usePartidaHelpers';
+import { useEspelhamentoQuadra } from './hooks/useEspelhamentoQuadra';
 import MicIcon from '../../components/MicIcon';
 import ButtonAtleta from './components/ButtonAtleta';
 import DisplayQuadra from './components/DisplayQuadra';
@@ -67,6 +68,8 @@ function Partida() {
     duplasVisuais,
     placarVisual
   } = usePartidaUI(duplas, score);
+
+  const quadraEspelhada = useEspelhamentoQuadra(acoesRally, atletaSelecionado, getTimeAtleta, ladosInvertidos);
 
   const validacoes = useValidacaoEstados({
     acoesRally,
@@ -274,6 +277,7 @@ function Partida() {
           posicaoAtual={activeZone?.zona}
           className={sidebarPosition === 'left' ? 'order-last' : 'order-first'}
           disabled={!atletaSelecionado}
+          quadraEspelhada={quadraEspelhada}
         />
       </div>
 
