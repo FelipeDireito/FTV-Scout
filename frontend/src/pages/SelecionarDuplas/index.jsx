@@ -182,6 +182,10 @@ function SelecionarDuplas() {
 
   };
 
+  const handleVoltar = () => {
+    navigate('/');
+  };
+
   return (
     <div className="flex flex-col p-4 md:p-8 h-full">
       <AddJogadorModal
@@ -234,11 +238,17 @@ function SelecionarDuplas() {
       </main>
 
       <footer className="mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
+        <button 
+          onClick={handleVoltar}
+          className="bg-transparent border-2 border-red-600 hover:bg-red-700 text-gray-200 font-bold uppercase py-3 px-6 rounded-lg transition-colors"
+        >
+          Cancelar
+        </button>
         <button
           onClick={resetDuplas}
           className="bg-transparent border-2 border-gray-600 hover:bg-gray-700 text-gray-200 font-bold uppercase py-3 px-6 rounded-lg transition-colors"
         >
-          Resetar
+          Resetar Atletas
         </button>
         <button
           id="btn-iniciar-partida"
