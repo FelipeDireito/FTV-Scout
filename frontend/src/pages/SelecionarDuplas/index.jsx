@@ -60,27 +60,7 @@ const AddJogadorModal = ({ isOpen, onClose, onSave }) => {
             id="novo-jogador-nome"
             value={nome} onChange={(e) => setNome(e.target.value)}
             className="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3"
-            placeholder="Ex: FuteCurioso"
-          />
-        </div>
-        <div>
-          <label htmlFor="novo-jogador-altura" className="block mb-2 text-sm font-medium text-gray-300">Altura (cm)</label>
-          <input
-            type="number"
-            id="novo-jogador-altura"
-            value={altura} onChange={(e) => setAltura(e.target.value)}
-            className="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3"
-            placeholder="Ex: 180"
-          />
-        </div>
-        <div>
-          <label htmlFor="novo-jogador-idade" className="block mb-2 text-sm font-medium text-gray-300">Idade</label>
-          <input
-            type="number"
-            id="novo-jogador-idade"
-            value={idade} onChange={(e) => setIdade(e.target.value)}
-            className="bg-gray-700 border border-gray-600 text-white text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3"
-            placeholder="Ex: 25"
+            placeholder="Ex: João"
           />
         </div>
         <div className="flex justify-end space-x-4 pt-4">
