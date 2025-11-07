@@ -1213,7 +1213,13 @@ def obtem_mapa_calor_posicoes_atleta(db: Session, atleta_id: int, tipo_acao_id: 
         pontos = pos_stats["pontos"]
         erros = pos_stats["erros"]
         
-        eficiencia = ((pontos - erros) / total * 100) if total > 0 else 0.0
+        acoes_aproveitamento = [2, 7] # Defesa e Recepção
+        
+        if tipo_acao_obj.tipo_acao_id in acoes_aproveitamento:
+            eficiencia = ((total - erros) / total * 100) if total > 0 else 0.0
+        else:
+            eficiencia = ((pontos - erros) / total * 100) if total > 0 else 0.0
+
         taxa_ponto = (pontos / total * 100) if total > 0 else 0.0
         taxa_erro = (erros / total * 100) if total > 0 else 0.0
         
