@@ -43,15 +43,12 @@ const QuadraMapaCalorPosicoes = ({ dadosMapa }) => {
     const temDados = stats && stats.total_acoes > 0 && ladoCorreto;
     const isSelecionada = posicaoSelecionada?.posicao === numeroZona && posicaoSelecionada?.lado === lado;
 
-    // Cor para zonas com dados, amarelo claro para zonas sem dados no lado ativo, ou cinza para lado inativo
     let cor;
     if (temDados) {
       cor = getCorMapaCalor(stats.total_acoes);
     } else if (ladoCorreto) {
-      // Lado ativo mas sem dados: amarelo bem claro
       cor = 'rgba(234, 179, 8, 0.15)';
     } else {
-      // Lado inativo: cinza padrão
       cor = 'rgba(55, 65, 81, 0.2)';
     }
 
