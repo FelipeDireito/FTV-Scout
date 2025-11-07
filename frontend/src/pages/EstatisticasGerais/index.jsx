@@ -204,8 +204,8 @@ function EstatisticasGerais() {
                   <div className="col-span-3 text-xs font-bold text-gray-300 uppercase tracking-wide">Partida</div>
                   <div className="col-span-2 text-xs font-bold text-gray-300 uppercase tracking-wide text-center">Placar</div>
                   <div className="col-span-1 text-xs font-bold text-gray-300 uppercase tracking-wide text-center">Resultado</div>
-                  <div className="col-span-5 text-xs font-bold text-gray-300 uppercase tracking-wide text-center">Estatísticas (Pontos)</div>
-                  <div className="col-span-1 text-xs font-bold text-gray-300 uppercase tracking-wide text-center">Ver Partida</div>
+                  <div className="col-span-5 text-xs font-bold text-gray-300 uppercase tracking-wide text-center">Estatísticas</div>
+                  <div className="col-span-1 text-xs font-bold text-gray-300 uppercase tracking-wide text-center">Análise</div>
                 </div>
 
                 <div className="divide-y divide-gray-700">
@@ -238,6 +238,10 @@ function EstatisticasGerais() {
                       </div>
 
                       <div className="col-span-1 md:col-span-5 flex items-center justify-center gap-6">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-gray-100">{partida.ataque_pontos + partida.saque_aces}</div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">Pontos</div>
+                        </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-green-400">{partida.ataque_pontos}</div>
                           <div className="text-xs text-gray-500 uppercase tracking-wide">Ataques</div>
