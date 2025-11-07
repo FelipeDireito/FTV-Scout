@@ -337,8 +337,8 @@ function Dashboard() {
             </div>
 
             <Link
-              to={atletaSelecionado ? '/estatisticas-gerais' : '#'}
-              state={atletaSelecionado ? { tipo: 'atleta', id: atletaSelecionado.atleta_id, nome: atletaSelecionado.nome_atleta } : null}
+              to={atletaSelecionado ? '/historico-atleta' : '#'}
+              state={atletaSelecionado ? { id: atletaSelecionado.atleta_id, nome: atletaSelecionado.nome_atleta } : null}
               className={`flex items-center px-8 rounded-r-lg font-bold text-white transition-all duration-200 border-2 border-l-0 ${atletaSelecionado
                 ? 'bg-[#00A3FF] hover:bg-[#0082cc] border-[#00A3FF] hover:border-[#0082cc] cursor-pointer'
                 : 'bg-gray-600 border-gray-600 cursor-not-allowed opacity-50'

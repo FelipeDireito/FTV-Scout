@@ -7,6 +7,7 @@ import NovaPartida from './pages/NovaPartida'
 import SelecionarDuplas from './pages/SelecionarDuplas';
 import Partida from './pages/Partida';
 import EstatisticasGerais from './pages/EstatisticasGerais';
+import HistoricoAtleta from './pages/HistoricoAtleta';
 import PWABadge from '../PWABadge';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/selecionar-duplas" element={<SelecionarDuplas />} />
         <Route path="/partida" element={<Partida />} />
         <Route path="/estatisticas-gerais" element={<EstatisticasGerais />} />
+        <Route path="/historico-atleta" element={<HistoricoAtleta />} />
       </Routes>
       <PWABadge />
     </BrowserRouter>
