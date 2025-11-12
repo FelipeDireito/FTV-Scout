@@ -1255,3 +1255,148 @@ def obtem_mapa_calor_posicoes_atleta(db: Session, atleta_id: int, tipo_acao_id: 
         "total_erros": total_erros_geral,
         "eficiencia_geral": round(eficiencia_geral, 2)
     }
+
+
+def obtem_mapa_calor_posicoes_dupla(db: Session, dupla_id: int, tipo_acao_id: int, partida_id: int = None):
+    
+    dupla = db.query(Dupla).filter(Dupla.dupla_id == dupla_id).first()
+    if not dupla:
+        return None
+    
+    tipo_acao_obj = db.query(TipoAcao).filter(TipoAcao.tipo_acao_id == tipo_acao_id).first()
+    if not tipo_acao_obj:
+        return None
+    
+    atletas_ids = [atleta.atleta_id for atleta in dupla.atletas]
+    
+    lado_quadra = "A"
+    
+    if partida_id:
+        partida = db.query(Partida).filter(Partida.partida_id == partida_id).first()
+        if partida:
+            if partida.dupla_a_id == dupla_id:
+                lado_quadra = "A"
+            elif partida.dupla_b_id == dupla_id:
+                lado_quadra = "B"
+    
+    acoes_mudam_lado = [1, 5, 6]  # IDs: Saque, Ataque, Bloqueio
+    muda_lado = tipo_acao_obj.tipo_acao_id in acoes_mudam_lado
+    lado_destino = "B" if lado_quadra == "A" else "A" if muda_lado else lado_quadra
+    
+    acoes_query = db.query(Acao).filter(
+        Acao.atleta_id.in_(atletas_ids),
+        Acao.tipo_acao_id == tipo_acao_obj.tipo_acao_id
+    )
+    
+    if muda_lado:
+        acoes_query = acoes_query.filter(Acao.posicao_quadra_destino.isnot(None))
+    else:
+        acoes_query = acoes_query.filter(
+            (Acao.posicao_quadra_origem.isnot(None)) | (Acao.posicao_quadra_destino.isnot(None))
+        )
+    
+    if partida_id:
+        acoes_query = acoes_query.join(Ponto).filter(Ponto.partida_id == partida_id)
+    
+    acoes = acoes_query.all()
+    
+    motivo_ace = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Ponto de ace").first()
+    motivo_ataque = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Ponto de ataque").first()
+    motivo_erro_nao_forcado = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Erro não forçado").first()
+    motivo_erro_forcado = db.query(MotivoPonto).filter(MotivoPonto.descricao == "Erro forçado").first()
+    
+    posicoes_stats = {}
+    
+    for acao in acoes:
+        if muda_lado:
+            posicao = acao.posicao_quadra_destino
+        else:
+            posicao = acao.posicao_quadra_origem if acao.posicao_quadra_origem else acao.posicao_quadra_destino
+        
+        if posicao is None:
+            continue
+        
+        if posicao not in posicoes_stats:
+            posicoes_stats[posicao] = {
+                "posicao": posicao,
+                "total_acoes": 0,
+                "pontos": 0,
+                "erros": 0,
+                "acoes_neutras": 0
+            }
+        
+        posicoes_stats[posicao]["total_acoes"] += 1
+        
+        if acao.ponto_id:
+            ponto = db.query(Ponto).filter(Ponto.ponto_id == acao.ponto_id).first()
+            if ponto:
+                if ponto.atleta_ponto_id in atletas_ids:
+                    if tipo_acao_obj.nome_acao == "Saque" and ponto.motivo_ponto_id == (motivo_ace.motivo_ponto_id if motivo_ace else -1):
+                        posicoes_stats[posicao]["pontos"] += 1
+                    elif tipo_acao_obj.nome_acao == "Ataque" and ponto.motivo_ponto_id == (motivo_ataque.motivo_ponto_id if motivo_ataque else -1):
+                        posicoes_stats[posicao]["pontos"] += 1
+                    else:
+                        posicoes_stats[posicao]["acoes_neutras"] += 1
+                elif ponto.atleta_erro_id in atletas_ids:
+                    if (ponto.motivo_ponto_id == (motivo_erro_nao_forcado.motivo_ponto_id if motivo_erro_nao_forcado else -1) or
+                        ponto.motivo_ponto_id == (motivo_erro_forcado.motivo_ponto_id if motivo_erro_forcado else -1)):
+                        posicoes_stats[posicao]["erros"] += 1
+                    else:
+                        posicoes_stats[posicao]["acoes_neutras"] += 1
+                else:
+                    posicoes_stats[posicao]["acoes_neutras"] += 1
+        else:
+            posicoes_stats[posicao]["acoes_neutras"] += 1
+    
+    posicoes_lista = []
+    total_acoes_geral = 0
+    total_pontos_geral = 0
+    total_erros_geral = 0
+    
+    for pos_stats in posicoes_stats.values():
+        total = pos_stats["total_acoes"]
+        pontos = pos_stats["pontos"]
+        erros = pos_stats["erros"]
+        
+        acoes_aproveitamento = [2, 7]  # Defesa e Recepção
+        
+        if tipo_acao_obj.tipo_acao_id in acoes_aproveitamento:
+            eficiencia = ((total - erros) / total * 100) if total > 0 else 0.0
+        else:
+            eficiencia = ((pontos - erros) / total * 100) if total > 0 else 0.0
+
+        taxa_ponto = (pontos / total * 100) if total > 0 else 0.0
+        taxa_erro = (erros / total * 100) if total > 0 else 0.0
+        
+        posicoes_lista.append({
+            "posicao": pos_stats["posicao"],
+            "total_acoes": total,
+            "pontos": pontos,
+            "erros": erros,
+            "acoes_neutras": pos_stats["acoes_neutras"],
+            "eficiencia": round(eficiencia, 2),
+            "taxa_ponto": round(taxa_ponto, 2),
+            "taxa_erro": round(taxa_erro, 2)
+        })
+        
+        total_acoes_geral += total
+        total_pontos_geral += pontos
+        total_erros_geral += erros
+    
+    posicoes_lista.sort(key=lambda x: x["posicao"])
+    
+    eficiencia_geral = ((total_pontos_geral - total_erros_geral) / total_acoes_geral * 100) if total_acoes_geral > 0 else 0.0
+    
+    return {
+        "dupla_id": dupla.dupla_id,
+        "nome": dupla.nome_dupla,
+        "tipo_acao_id": tipo_acao_obj.tipo_acao_id,
+        "tipo_acao_nome": tipo_acao_obj.nome_acao,
+        "lado_quadra": lado_quadra,
+        "lado_destino": lado_destino,
+        "posicoes": posicoes_lista,
+        "total_acoes": total_acoes_geral,
+        "total_pontos": total_pontos_geral,
+        "total_erros": total_erros_geral,
+        "eficiencia_geral": round(eficiencia_geral, 2)
+    }

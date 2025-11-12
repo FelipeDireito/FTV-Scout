@@ -231,6 +231,24 @@ class MapaCalorPosicoes(BaseModel):
         from_attributes = True
 
 
+class MapaCalorPosicoesDupla(BaseModel):
+    
+    dupla_id: int
+    nome: str
+    tipo_acao_id: int = Field(..., description="ID do tipo de ação")
+    tipo_acao_nome: str = Field(..., description="Nome do tipo de ação")
+    lado_quadra: str = Field(..., description="Lado da quadra onde a dupla está jogando (A ou B)")
+    lado_destino: str = Field(..., description="Lado da quadra de destino das ações (A ou B)")
+    posicoes: List[PosicaoStats] = Field(..., description="Lista de posições com estatísticas agregadas")
+    total_acoes: int = Field(..., description="Total de ações em todas as posições")
+    total_pontos: int = Field(..., description="Total de pontos marcados")
+    total_erros: int = Field(..., description="Total de erros cometidos")
+    eficiencia_geral: float = Field(..., description="Eficiência geral ((Pontos - Erros) / Total) * 100")
+
+    class Config:
+        from_attributes = True
+
+
 class PartidaHistoricoAtleta(BaseModel):
     
     partida_id: int

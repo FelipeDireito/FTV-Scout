@@ -14,6 +14,7 @@ from src.estatisticas.schemas import (
     AtletaEstatisticasCompletas,
     MapaCalor,
     MapaCalorPosicoes,
+    MapaCalorPosicoesDupla,
     PartidaHistoricoAtleta,
     PartidaHistoricoDupla,
     EstatisticasVitoriasAtleta,
@@ -33,7 +34,8 @@ from src.estatisticas.services import (
     obtem_estatisticas_completas_dupla,
     obtem_estatisticas_completas_atleta,
     obtem_mapa_calor_atleta,
-    obtem_mapa_calor_posicoes_atleta
+    obtem_mapa_calor_posicoes_atleta,
+    obtem_mapa_calor_posicoes_dupla
 )
 from src.estatisticas.services_historico import (
     obtem_estatisticas_vitorias_atleta,
@@ -292,6 +294,22 @@ def obter_mapa_calor_posicoes_atleta(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Atleta com ID {atleta_id} não encontrado ou tipo de ação inválido"
         )
+    
+    return resultado
+
+
+@estatisticas_router.get("/dupla/{dupla_id}/mapa-calor-posicoes", response_model=MapaCalorPosicoesDupla)
+def endpoint_mapa_calor_posicoes_dupla(
+    dupla_id: int,
+    tipo_acao_id: int = Query(..., description="ID do tipo de ação (1=Saque, 5=Ataque, etc)"),
+    partida_id: Optional[int] = Query(None, description="ID da partida (opcional)"),
+    db: Session = Depends(get_db)
+):
+
+    resultado = obtem_mapa_calor_posicoes_dupla(db, dupla_id, tipo_acao_id, partida_id)
+    
+    if resultado is None:
+        raise HTTPException(status_code=404, detail="Dupla ou tipo de ação não encontrado")
     
     return resultado
 
