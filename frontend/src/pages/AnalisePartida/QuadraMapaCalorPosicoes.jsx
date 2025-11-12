@@ -26,7 +26,7 @@ const QuadraMapaCalorPosicoes = ({ dadosMapa }) => {
   const getCorMapaCalor = (totalAcoes) => {
     const intensidade = Math.min(totalAcoes / maxAcoes, 1);
 
-    const opacity = Math.max(0.6, intensidade);
+    const opacity = Math.max(0.92, intensidade);
 
     if (intensidade <= 0.33) {
       return `rgba(234, 179, 8, ${opacity})`;
