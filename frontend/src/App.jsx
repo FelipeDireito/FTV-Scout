@@ -3,11 +3,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import AnalisePartida from './pages/AnalisePartida';
-import NovaPartida from './pages/NovaPartida'
+import HistoricoAtleta from './pages/HistoricoAtleta';
+import HistoricoDupla from './pages/HistoricoDupla';
+import NovaPartida from './pages/NovaPartida';
 import SelecionarDuplas from './pages/SelecionarDuplas';
 import Partida from './pages/Partida';
 import EstatisticasGerais from './pages/EstatisticasGerais';
-import HistoricoAtleta from './pages/HistoricoAtleta';
 import PWABadge from '../PWABadge';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/partida" element={<Partida />} />
         <Route path="/estatisticas-gerais" element={<EstatisticasGerais />} />
         <Route path="/historico-atleta" element={<HistoricoAtleta />} />
+        <Route path="/historico-dupla" element={<HistoricoDupla />} />
       </Routes>
       <PWABadge />
     </BrowserRouter>

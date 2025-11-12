@@ -420,8 +420,8 @@ function Dashboard() {
             </div>
 
             <Link
-              to={duplaSelecionada ? '/estatisticas-gerais' : '#'}
-              state={duplaSelecionada ? { tipo: 'dupla', id: duplaSelecionada.dupla_id, nome: duplaSelecionada.nome_dupla } : null}
+              to={duplaSelecionada ? '/historico-dupla' : '#'}
+              state={duplaSelecionada ? { id: duplaSelecionada.dupla_id, nome: duplaSelecionada.nome_dupla } : null}
               className={`flex items-center px-8 rounded-r-lg font-bold text-white transition-all duration-200 border-2 border-l-0 ${duplaSelecionada
                 ? 'bg-[#00A3FF] hover:bg-[#0082cc] border-[#00A3FF] hover:border-[#0082cc] cursor-pointer'
                 : 'bg-gray-600 border-gray-600 cursor-not-allowed opacity-50'
