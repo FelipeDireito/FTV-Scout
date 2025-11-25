@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
 import api from '../../../services/api';
 
 export const useControlePartida = (partida, duplas, initialScore = { a: 0, b: 0 }) => {

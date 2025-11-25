@@ -206,14 +206,14 @@ function AnalisePartida() {
     return `${Math.round(valor)}%`;
   };
 
-  const toggleExpandidoDuplaA = async () => {
+  const _toggleExpandidoDuplaA = async () => {
     if (!expandidoDuplaA && atletasDuplaA.length === 0) {
       await fetchAtletasDupla(partida.dupla_a_id, setAtletasDuplaA);
     }
     setExpandidoDuplaA(!expandidoDuplaA);
   };
 
-  const toggleExpandidoDuplaB = async () => {
+  const _toggleExpandidoDuplaB = async () => {
     if (!expandidoDuplaB && atletasDuplaB.length === 0) {
       await fetchAtletasDupla(partida.dupla_b_id, setAtletasDuplaB);
     }

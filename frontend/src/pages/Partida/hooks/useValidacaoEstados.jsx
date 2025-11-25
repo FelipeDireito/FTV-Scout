@@ -4,7 +4,6 @@ export const useValidacaoEstados = ({
   acoesRally = [],
   atletaSelecionado = null,
   pontoPendente = null,
-  getTimeAtleta = () => null,
   score = { a: 0, b: 0 },
 }) => {
 

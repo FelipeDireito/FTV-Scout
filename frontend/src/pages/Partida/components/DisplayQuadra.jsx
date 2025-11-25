@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 
 const DisplayQuadra = memo(({
   activeZone,
