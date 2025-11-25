@@ -144,7 +144,7 @@ function AnalisePartida() {
       );
       setDadosMapaCalor(response.data);
     } catch (err) {
-      console.error('Erro ao carregar mapa de calor:', err);
+      console.error('Erro ao carregar mapa de ações:', err);
       setDadosMapaCalor(null);
     } finally {
       setLoadingMapa(false);
@@ -324,7 +324,7 @@ function AnalisePartida() {
               : 'text-gray-400 hover:text-gray-300'
               }`}
           >
-            Mapa de Calor
+            Mapa de Ações
           </button>
         </div>
       </div>
@@ -469,7 +469,7 @@ function AnalisePartida() {
       {/* Conteúdo: Mapa de Calor */}
       {abaAtiva === 'mapa-calor' && (
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-white text-center mb-6">Mapa Coroplético</h2>
+          <h2 className="text-2xl font-bold text-white text-center mb-6">Mapa de Ações</h2>
 
           {/* Filtros */}
           <div className="space-y-4">
@@ -537,7 +537,7 @@ function AnalisePartida() {
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00A3FF] mx-auto mb-4"></div>
-                <div className="text-gray-400">Carregando mapa de calor...</div>
+                <div className="text-gray-400">Carregando mapa de ações...</div>
               </div>
             </div>
           ) : dadosMapaCalor ? (
@@ -545,7 +545,7 @@ function AnalisePartida() {
           ) : (
             <div className="text-center py-12 bg-[#1E1E1E] rounded-xl border-2 border-gray-700">
               <div className="text-gray-400 text-lg">
-                Selecione um atleta e tipo de ação para visualizar o mapa de calor
+                Selecione um atleta e tipo de ação para visualizar o mapa de ações
               </div>
               <div className="text-gray-500 text-sm mt-2">
                 Use os filtros acima para começar a análise

@@ -64,7 +64,7 @@ function HistoricoDupla() {
       );
       setDadosMapaCalor(response.data);
     } catch (err) {
-      console.error('Erro ao carregar mapa de calor:', err);
+      console.error('Erro ao carregar mapa de ações:', err);
       setDadosMapaCalor(null);
     } finally {
       setLoadingMapa(false);
@@ -149,7 +149,7 @@ function HistoricoDupla() {
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
-            Mapa de Calor
+            Mapa de Ações
           </button>
         </div>
       </div>
@@ -294,7 +294,7 @@ function HistoricoDupla() {
           {abaAtiva === 'mapa-calor' && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-white text-center mb-6">
-                Mapa de Calor - Histórico Completo
+                Mapa de Ações - Histórico Completo
               </h2>
 
               {/* Seletor de Tipo de Ação */}
@@ -321,7 +321,7 @@ function HistoricoDupla() {
                 <div className="flex items-center justify-center py-12">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00A3FF] mx-auto mb-4"></div>
-                    <div className="text-gray-400">Carregando mapa de calor...</div>
+                    <div className="text-gray-400">Carregando mapa de ações...</div>
                   </div>
                 </div>
               ) : dadosMapaCalor && dadosMapaCalor.total_acoes > 0 ? (
