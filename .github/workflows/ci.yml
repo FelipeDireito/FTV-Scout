@@ -57,10 +57,7 @@ jobs:
         node-version: '20'
     
     - name: Instalar dependências
-      run: |
-        rm -rf node_modules package-lock.json
-        npm install
-        npm install @vitest/coverage-v8 --save-dev
+      run: npm ci
     
     - name: Executar linter
       run: npm run lint
@@ -87,9 +84,7 @@ jobs:
         node-version: '20'
     
     - name: Instalar dependências
-      run: |
-        rm -rf node_modules package-lock.json
-        npm install
+      run: npm ci
     
     - name: Build da aplicação
       run: npm run build
@@ -102,7 +97,7 @@ jobs:
         retention-days: 7
 
   all-tests-passed:
-    name: All Tests Passed
+    name: Testes Concluídos
     runs-on: ubuntu-latest
     needs: [backend-tests, frontend-tests, frontend-build]
     
