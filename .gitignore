@@ -28,6 +28,8 @@ build/
 /frontend/node_modules/
 /frontend/dist/
 /frontend/.env
+/frontend/coverage/
+/frontend/.vitest/
 
 # Backend
 /backend/__pycache__/
@@ -41,6 +43,8 @@ build/
 /backend/htmlcov/
 /backend/.ruff_cache
 /backend/.pytest_cache
+/backend/coverage.xml
+/backend/.coverage.*
 
 # Banco de Dados
 test.db
