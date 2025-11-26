@@ -47,7 +47,7 @@ build/
 /backend/.coverage.*
 
 # Banco de Dados
-test.db
+dados.db
 *.sql
 
 # OS
