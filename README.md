@@ -1,9 +1,21 @@
 # FTV-Scout
 
 
-FTV-Scout é uma aplicação web progressiva (PWA) desenvolvida para realizar a notação de ações e análise estatística de partidas de futevôlei. O sistema permite registrar ações, pontos, técnicas e posicionamento dos atletas em tempo real durante as partidas para gerar estatísticas detalhadas.
+FTV-Scout é uma aplicação web progressiva (PWA) desenvolvida para realizar a notação de ações e análise estatística de partidas de futevôlei. O sistema permite registrar ações, pontos, técnicas e posicionamento dos atletas em tempo real durante as partidas para gerar estatísticas dos atletas e duplas.
 
-### Funcionalidades Principais
+## 📸 Screenshots
+
+<div align="center">
+
+### Notação de Partida
+![Notação de Saque](.github/assets/notacao_saque.png)
+
+### Dashboard de Estatísticas
+![Estatísticas de Duplas](.github/assets/estatisticas_duplas.png)
+
+</div>
+
+## Funcionalidades Principais
 
 - 📊 Notação em tempo real de partidas
 - 🎯 Registro automático do tipo de ação (ataque, defesa, recepção, saque, etc.)
@@ -13,6 +25,7 @@ FTV-Scout é uma aplicação web progressiva (PWA) desenvolvida para realizar a 
 - 🎨 Interface responsiva otimizada para tablets
 - 🔄 Inversão visual dos lados da quadra
 - 📱 Suporte PWA para instalação como app
+
 
 ## Tecnologias Utilizadas
 
