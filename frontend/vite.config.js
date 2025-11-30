@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       https: true,
+      host: true,
       proxy: {
         '/api': {
           target: env.API_TARGET || 'http://localhost:8000',
