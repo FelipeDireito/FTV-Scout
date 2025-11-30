@@ -9,13 +9,14 @@ const ButtonAtleta = memo(({
   isRallyStarted, 
   onSaqueClick,
   disabledSaque = false,
-  ehSacadorAtual = false
+  ehSacadorAtual = false,
+  setLogMessage
 }) => (
   <button
     onClick={(e) => {
       if (!isRallyStarted && !disabledSaque && (ehSacadorAtual || ehSacadorAtual === null)) {
         e.stopPropagation();
-        onSaqueClick(atleta);
+        onSaqueClick(atleta, setLogMessage);
       } else if (!disabled && typeof onClick === 'function') {
         onClick(e);
       }

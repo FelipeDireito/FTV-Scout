@@ -205,9 +205,10 @@ function Partida() {
               corTime={duplasVisuais.esquerda.cor}
               disabled={validacoes.atletaDesabilitado}
               isRallyStarted={acoesRally.length > 0}
-              onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
+              onSaqueClick={handleSaque}
               disabledSaque={validacoes.saqueDesabilitado}
               ehSacadorAtual={ehSacadorAtual(duplasVisuais.esquerda.atletas[0].atleta_id)}
+              setLogMessage={setLogMessage}
             />
             <ButtonAtleta
               atleta={duplasVisuais.esquerda.atletas[1]}
@@ -216,9 +217,10 @@ function Partida() {
               corTime={duplasVisuais.esquerda.cor}
               disabled={validacoes.atletaDesabilitado}
               isRallyStarted={acoesRally.length > 0}
-              onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
+              onSaqueClick={handleSaque}
               disabledSaque={validacoes.saqueDesabilitado}
               ehSacadorAtual={ehSacadorAtual(duplasVisuais.esquerda.atletas[1].atleta_id)}
+              setLogMessage={setLogMessage}
             />
           </div>
 
@@ -254,9 +256,10 @@ function Partida() {
               corTime={duplasVisuais.direita.cor}
               disabled={validacoes.atletaDesabilitado}
               isRallyStarted={acoesRally.length > 0}
-              onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
+              onSaqueClick={handleSaque}
               disabledSaque={validacoes.saqueDesabilitado}
               ehSacadorAtual={ehSacadorAtual(duplasVisuais.direita.atletas[0].atleta_id)}
+              setLogMessage={setLogMessage}
             />
             <ButtonAtleta
               atleta={duplasVisuais.direita.atletas[1]}
@@ -265,9 +268,10 @@ function Partida() {
               corTime={duplasVisuais.direita.cor}
               disabled={validacoes.atletaDesabilitado}
               isRallyStarted={acoesRally.length > 0}
-              onSaqueClick={(atleta) => handleSaque(atleta, setLogMessage)}
+              onSaqueClick={handleSaque}
               disabledSaque={validacoes.saqueDesabilitado}
               ehSacadorAtual={ehSacadorAtual(duplasVisuais.direita.atletas[1].atleta_id)}
+              setLogMessage={setLogMessage}
             />
           </div>
         </main>
